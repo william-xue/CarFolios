@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { getMyOrders } from '@/mock'
+import { getMyBuyOrders, payOrder, cancelOrder } from '@/api/order'
+import { showToast, showConfirmDialog } from 'vant'
 import type { OrderItem, OrderStatus } from '@/types'
 
 const router = useRouter()
@@ -17,12 +18,18 @@ const statusMap: Record<OrderStatus, { text: string; type: 'primary' | 'success'
 }
 
 onMounted(async () => {
+  await loadOrders()
+})
+
+async function loadOrders() {
+  loading.value = true
   try {
-    orders.value = await getMyOrders()
+    const res = await getMyBuyOrders({ page: 1, pageSize: 50 })
+    orders.value = res.list
   } finally {
     loading.value = false
   }
-})
+}
 
 function goBack() {
   router.back()
@@ -34,6 +41,38 @@ function goToDetail(carId: number) {
 
 function formatDate(dateStr: string) {
   return new Date(dateStr).toLocaleString('zh-CN')
+}
+
+async function handlePay(order: OrderItem) {
+  try {
+    await showConfirmDialog({
+      title: '确认支付',
+      message: `确认支付定金 ¥${order.depositAmount.toLocaleString()} 吗？`,
+    })
+    await payOrder(order.id)
+    showToast('支付成功')
+    await loadOrders()
+  } catch (e: any) {
+    if (e !== 'cancel') {
+      showToast(e.message || '支付失败')
+    }
+  }
+}
+
+async function handleCancel(order: OrderItem) {
+  try {
+    await showConfirmDialog({
+      title: '取消订单',
+      message: '确认取消该订单吗？',
+    })
+    await cancelOrder(order.id)
+    showToast('订单已取消')
+    await loadOrders()
+  } catch (e: any) {
+    if (e !== 'cancel') {
+      showToast(e.message || '取消失败')
+    }
+  }
 }
 </script>
 
@@ -54,7 +93,6 @@ function formatDate(dateStr: string) {
         v-for="order in orders"
         :key="order.id"
         class="order-card"
-        @click="goToDetail(order.carId)"
       >
         <div class="order-header">
           <span class="order-no">{{ order.orderNo }}</span>
@@ -62,7 +100,7 @@ function formatDate(dateStr: string) {
             {{ statusMap[order.status].text }}
           </van-tag>
         </div>
-        <div class="order-content">
+        <div class="order-content" @click="goToDetail(order.carId)">
           <van-image :src="order.carImage" fit="cover" class="car-image" />
           <div class="order-info">
             <div class="car-title ellipsis-2">{{ order.carTitle }}</div>
@@ -78,12 +116,14 @@ function formatDate(dateStr: string) {
         </div>
         <div class="order-footer">
           <span class="order-time">{{ formatDate(order.createdAt) }}</span>
-          <van-button v-if="order.status === 'pending'" type="primary" size="small">
-            去支付
-          </van-button>
-          <van-button v-else-if="order.status === 'paid'" size="small">
-            联系卖家
-          </van-button>
+          <div class="order-actions">
+            <van-button v-if="order.status === 'pending'" size="small" @click="handleCancel(order)">
+              取消订单
+            </van-button>
+            <van-button v-if="order.status === 'pending'" type="primary" size="small" @click="handlePay(order)">
+              去支付
+            </van-button>
+          </div>
         </div>
       </div>
     </div>
@@ -178,5 +218,10 @@ function formatDate(dateStr: string) {
 .order-time {
   font-size: 12px;
   color: #999;
+}
+
+.order-actions {
+  display: flex;
+  gap: 8px;
 }
 </style>

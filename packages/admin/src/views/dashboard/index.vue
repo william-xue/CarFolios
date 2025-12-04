@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { mockGetDashboardStats } from '@/mock'
+import { getDashboardStats } from '@/api'
 import type { DashboardStats } from '@/types'
 import { Van, Document, User, ShoppingCart } from '@element-plus/icons-vue'
 
@@ -23,7 +23,7 @@ const stats = ref<DashboardStats>({
 
 onMounted(async () => {
   try {
-    stats.value = await mockGetDashboardStats()
+    stats.value = await getDashboardStats()
   } finally {
     loading.value = false
   }

@@ -6,7 +6,7 @@ import { ElMessage } from 'element-plus'
 import type { FormInstance, FormRules } from 'element-plus'
 import type { CarForm, GearboxType, EmissionStandard, UseType } from '@/types'
 import { Plus, Upload } from '@element-plus/icons-vue'
-import { mockUploadImage } from '@/mock'
+import { uploadImage } from '@/api/upload'
 
 const route = useRoute()
 const router = useRouter()
@@ -223,8 +223,8 @@ async function handleFileChange(event: Event) {
         continue
       }
       // 上传图片
-      const url = await mockUploadImage(file)
-      form.images.push(url)
+      const result = await uploadImage(file)
+      form.images.push(result.url)
     }
     ElMessage.success('图片上传成功')
   } catch (error: any) {

@@ -7,26 +7,30 @@ import { showToast } from 'vant'
 const router = useRouter()
 const userStore = useUserStore()
 
-const mobile = ref('')
-const code = ref('')
+const mobile = ref('13800138000')
+const code = ref('1234')
 const loading = ref(false)
 const countdown = ref(0)
 
-function sendCode() {
+async function sendCode() {
   if (!mobile.value || mobile.value.length !== 11) {
     showToast('请输入正确的手机号')
     return
   }
   
-  countdown.value = 60
-  const timer = setInterval(() => {
-    countdown.value--
-    if (countdown.value <= 0) {
-      clearInterval(timer)
-    }
-  }, 1000)
-  
-  showToast('验证码已发送（测试验证码：1234）')
+  try {
+    await userStore.sendCode(mobile.value)
+    countdown.value = 60
+    const timer = setInterval(() => {
+      countdown.value--
+      if (countdown.value <= 0) {
+        clearInterval(timer)
+      }
+    }, 1000)
+    showToast('验证码已发送（测试验证码：1234）')
+  } catch (error: any) {
+    showToast(error.message || '发送失败')
+  }
 }
 
 async function handleLogin() {

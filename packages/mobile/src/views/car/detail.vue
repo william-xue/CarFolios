@@ -2,14 +2,18 @@
 import { ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useCarStore } from '@/stores/car'
-import { showToast, showConfirmDialog } from 'vant'
+import { useUserStore } from '@/stores/user'
+import { createOrder } from '@/api/order'
+import { showToast, showConfirmDialog, showLoadingToast, closeToast } from 'vant'
 
 const route = useRoute()
 const router = useRouter()
 const carStore = useCarStore()
+const userStore = useUserStore()
 
 const carId = Number(route.params.id)
 const showContact = ref(false)
+const ordering = ref(false)
 
 onMounted(() => {
   carStore.fetchCarDetail(carId)
@@ -21,18 +25,41 @@ function formatGearbox(type?: string) {
 }
 
 function handleContact() {
+  if (!userStore.isLoggedIn) {
+    showToast('请先登录')
+    router.push('/login')
+    return
+  }
   showContact.value = true
 }
 
 async function handleOrder() {
+  if (!userStore.isLoggedIn) {
+    showToast('请先登录')
+    router.push('/login')
+    return
+  }
+
   try {
     await showConfirmDialog({
       title: '确认下单',
-      message: `确定要预约看车吗？需支付定金 ¥5,000`,
+      message: `确定要支付定金 ¥5,000 预订该车辆吗？`,
     })
-    showToast('预约成功，请等待卖家联系')
-  } catch {
-    // 取消
+    
+    ordering.value = true
+    showLoadingToast({ message: '创建订单中...', forbidClick: true })
+    
+    await createOrder(carId, 5000)
+    closeToast()
+    showToast('下单成功')
+    router.push('/my-orders')
+  } catch (e: any) {
+    closeToast()
+    if (e !== 'cancel') {
+      showToast(e.message || '下单失败')
+    }
+  } finally {
+    ordering.value = false
   }
 }
 

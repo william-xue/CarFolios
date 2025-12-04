@@ -9,10 +9,21 @@ export class CarService {
 
     // 创建车源
     async create(userId: number, dto: CreateCarDto) {
+        // 如果没有提供标题，自动生成
+        let title = dto.title
+        if (!title) {
+            const brand = await this.prisma.brand.findUnique({ where: { id: dto.brandId } })
+            const series = await this.prisma.series.findUnique({ where: { id: dto.seriesId } })
+            const year = dto.firstRegDate?.split('-')[0] || new Date().getFullYear()
+            title = `${brand?.name || ''} ${series?.name || ''} ${year}款`
+        }
+
         return this.prisma.car.create({
             data: {
                 ...dto,
+                title,
                 ownerId: userId,
+                coverImage: dto.images?.[0] || null,
                 images: dto.images ? JSON.stringify(dto.images) : null,
                 configs: dto.configs ? JSON.stringify(dto.configs) : null,
                 status: 'pending',

@@ -40,7 +40,7 @@ export class AuthService {
         })
 
         return {
-            token,
+            access_token: token,
             user: {
                 id: admin.id,
                 username: admin.username,
@@ -104,7 +104,7 @@ export class AuthService {
         })
 
         return {
-            token,
+            access_token: token,
             user: {
                 id: user.id,
                 mobile: user.mobile.replace(/(\d{3})\d{4}(\d{4})/, '$1****$2'),

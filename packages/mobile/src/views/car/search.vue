@@ -45,9 +45,9 @@ function goBack() {
   router.back()
 }
 
-function formatGearbox(type: string) {
+function formatGearbox(type?: string) {
   const map: Record<string, string> = { MT: '手动', AT: '自动', DCT: '双离合', CVT: 'CVT' }
-  return map[type] || type
+  return map[type || ''] || type || '-'
 }
 </script>
 

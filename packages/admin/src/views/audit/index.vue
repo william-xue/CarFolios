@@ -17,7 +17,7 @@ onMounted(async () => {
 async function fetchPendingCars() {
   loading.value = true
   try {
-    await carStore.fetchCars({ status: 'pending' }, 1, 50)
+    await carStore.fetchPendingCars({}, 1, 50)
   } finally {
     loading.value = false
   }
@@ -34,7 +34,7 @@ async function handleApprove(id: number) {
       cancelButtonText: '取消',
       type: 'success',
     })
-    await carStore.updateCarStatus(id, 'on')
+    await carStore.auditCar(id, 'approved')
     ElMessage.success('审核通过，车源已上架')
     await fetchPendingCars()
   } catch {
@@ -55,7 +55,7 @@ async function handleReject(id: number) {
         return true
       },
     })
-    await carStore.updateCarStatus(id, 'rejected', reason)
+    await carStore.auditCar(id, 'rejected', reason)
     ElMessage.success('已拒绝该车源')
     await fetchPendingCars()
   } catch {

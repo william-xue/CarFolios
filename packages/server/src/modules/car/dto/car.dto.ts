@@ -3,9 +3,10 @@ import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger'
 import { Type } from 'class-transformer'
 
 export class CreateCarDto {
-    @ApiProperty({ description: '标题' })
+    @ApiPropertyOptional({ description: '标题（可选，不填则自动生成）' })
+    @IsOptional()
     @IsString()
-    title: string
+    title?: string
 
     @ApiProperty({ description: '品牌ID' })
     @IsNumber()

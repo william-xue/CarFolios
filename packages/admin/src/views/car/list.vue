@@ -123,7 +123,9 @@ async function handleStatusChange(id: number, command: string) {
     handleDelete(id)
     return
   }
-  await carStore.updateCarStatus(id, command as CarStatus)
+  if (command === 'on' || command === 'off') {
+    await carStore.toggleCarStatus(id, command)
+  }
   ElMessage.success('状态更新成功')
   fetchData()
 }

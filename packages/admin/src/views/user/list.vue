@@ -76,8 +76,8 @@ function handlePageChange(page: number) {
 }
 
 async function handleToggleStatus(user: PlatformUser) {
-    const newStatus = user.status === 'enabled' ? 'disabled' : 'enabled'
-    const action = newStatus === 'disabled' ? '禁用' : '启用'
+    const newStatus = user.status === 'enabled' ? 0 : 1  // 0=禁用, 1=启用
+    const action = newStatus === 0 ? '禁用' : '启用'
     
     try {
         await ElMessageBox.confirm(`确定要${action}用户 "${user.nickname}" 吗？`, '提示', {

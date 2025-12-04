@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
 import type { PlatformUser, UserFilters, PageParams } from '@/types'
-import { mockGetUsers, mockGetUserDetail, mockUpdateUserStatus, mockUpdateUserAuth } from '@/mock'
+import * as userApi from '@/api/user'
 
 export const usePlatformUserStore = defineStore('platformUser', () => {
     const users = ref<PlatformUser[]>([])
@@ -12,7 +12,7 @@ export const usePlatformUserStore = defineStore('platformUser', () => {
     async function fetchUsers(params: UserFilters & PageParams) {
         loading.value = true
         try {
-            const res = await mockGetUsers(params)
+            const res = await userApi.getUsers(params)
             users.value = res.list
             total.value = res.total
             return res
@@ -24,19 +24,19 @@ export const usePlatformUserStore = defineStore('platformUser', () => {
     async function fetchUserDetail(id: number) {
         loading.value = true
         try {
-            currentUser.value = await mockGetUserDetail(id)
+            currentUser.value = await userApi.getUserDetail(id)
             return currentUser.value
         } finally {
             loading.value = false
         }
     }
 
-    async function updateUserStatus(id: number, status: PlatformUser['status']) {
-        await mockUpdateUserStatus(id, status)
+    async function updateUserStatus(id: number, status: number) {
+        await userApi.updateUserStatus(id, status)
     }
 
-    async function updateUserAuth(id: number, authStatus: PlatformUser['authStatus']) {
-        await mockUpdateUserAuth(id, authStatus)
+    async function updateUserAuth(id: number, authStatus: 'verified' | 'rejected', reason?: string) {
+        await userApi.verifyUserAuth(id, { status: authStatus, reason })
     }
 
     return {

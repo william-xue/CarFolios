@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
-import type { CarListItem, CarDetail, Brand, City } from '@/types'
-import { mockGetCarList, mockGetCarDetail, mockGetRecommendCars, mockGetBrands, mockGetSeries, mockGetCities } from '@/mock'
+import type { CarListItem, CarDetail, Brand } from '@/types'
+import * as carApi from '@/api/car'
 
 export const useCarStore = defineStore('car', () => {
     const carList = ref<CarListItem[]>([])
@@ -9,14 +9,13 @@ export const useCarStore = defineStore('car', () => {
     const recommendCars = ref<CarListItem[]>([])
     const brands = ref<Brand[]>([])
     const series = ref<{ id: number; brandId: number; name: string }[]>([])
-    const cities = ref<City[]>([])
     const total = ref(0)
     const loading = ref(false)
 
     async function fetchCarList(params: { page: number; pageSize: number; keyword?: string; brandId?: number }) {
         loading.value = true
         try {
-            const res = await mockGetCarList(params)
+            const res = await carApi.getOnSaleCars(params)
             if (params.page === 1) {
                 carList.value = res.list
             } else {
@@ -32,7 +31,7 @@ export const useCarStore = defineStore('car', () => {
     async function fetchCarDetail(id: number) {
         loading.value = true
         try {
-            currentCar.value = await mockGetCarDetail(id)
+            currentCar.value = await carApi.getCarDetail(id)
             return currentCar.value
         } finally {
             loading.value = false
@@ -40,19 +39,16 @@ export const useCarStore = defineStore('car', () => {
     }
 
     async function fetchRecommendCars() {
-        recommendCars.value = await mockGetRecommendCars()
+        const res = await carApi.getOnSaleCars({ page: 1, pageSize: 4 })
+        recommendCars.value = res.list
     }
 
     async function fetchBrands() {
-        brands.value = await mockGetBrands()
+        brands.value = await carApi.getBrands()
     }
 
     async function fetchSeries(brandId: number) {
-        series.value = await mockGetSeries(brandId)
-    }
-
-    async function fetchCities() {
-        cities.value = await mockGetCities()
+        series.value = await carApi.getSeries(brandId)
     }
 
     // 别名，兼容不同命名
@@ -66,7 +62,6 @@ export const useCarStore = defineStore('car', () => {
         recommendCars,
         brands,
         series,
-        cities,
         total,
         loading,
         fetchCarList,
@@ -75,6 +70,5 @@ export const useCarStore = defineStore('car', () => {
         fetchRecommendCars,
         fetchBrands,
         fetchSeries,
-        fetchCities,
     }
 })
