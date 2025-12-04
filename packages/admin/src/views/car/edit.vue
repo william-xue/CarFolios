@@ -5,7 +5,8 @@ import { useCarStore } from '@/stores/car'
 import { ElMessage } from 'element-plus'
 import type { FormInstance, FormRules } from 'element-plus'
 import type { CarForm, GearboxType, EmissionStandard, UseType } from '@/types'
-import { Plus } from '@element-plus/icons-vue'
+import { Plus, Upload } from '@element-plus/icons-vue'
+import { mockUploadImage } from '@/mock'
 
 const route = useRoute()
 const router = useRouter()
@@ -84,7 +85,7 @@ const configOptions = [
   '蓝牙电话', '无钥匙进入', '一键启动', '电动尾门', '空气悬挂',
 ]
 
-// 示例图片（实际项目中应该上传到服务器）
+// 示例图片（用于快速添加演示）
 const sampleImages = [
   'https://images.unsplash.com/photo-1555215695-3004980ad54e?w=800',
   'https://images.unsplash.com/photo-1494976388531-d1058494cdd8?w=800',
@@ -92,6 +93,9 @@ const sampleImages = [
   'https://images.unsplash.com/photo-1542362567-b07e54358753?w=800',
   'https://images.unsplash.com/photo-1552519507-da3b142c6e3d?w=800',
 ]
+
+const fileInputRef = ref<HTMLInputElement | null>(null)
+const uploading = ref(false)
 
 onMounted(async () => {
   loading.value = true
@@ -194,6 +198,49 @@ function addSampleImage() {
 
 function removeImage(index: number) {
   form.images.splice(index, 1)
+}
+
+function triggerUpload() {
+  fileInputRef.value?.click()
+}
+
+async function handleFileChange(event: Event) {
+  const input = event.target as HTMLInputElement
+  const files = input.files
+  if (!files || files.length === 0) return
+
+  uploading.value = true
+  try {
+    for (const file of Array.from(files)) {
+      // 验证文件类型
+      if (!file.type.startsWith('image/')) {
+        ElMessage.warning(`${file.name} 不是图片文件`)
+        continue
+      }
+      // 验证文件大小（最大 5MB）
+      if (file.size > 5 * 1024 * 1024) {
+        ElMessage.warning(`${file.name} 超过 5MB 限制`)
+        continue
+      }
+      // 上传图片
+      const url = await mockUploadImage(file)
+      form.images.push(url)
+    }
+    ElMessage.success('图片上传成功')
+  } catch (error: any) {
+    ElMessage.error(error.message || '上传失败')
+  } finally {
+    uploading.value = false
+    // 清空 input 以便重复选择同一文件
+    input.value = ''
+  }
+}
+
+function setAsCover(index: number) {
+  if (index === 0) return
+  const [img] = form.images.splice(index, 1)
+  form.images.unshift(img)
+  ElMessage.success('已设为封面')
 }
 </script>
 
@@ -420,20 +467,46 @@ function removeImage(index: number) {
               v-for="(img, index) in form.images"
               :key="index"
               class="image-item"
+              :class="{ 'is-cover': index === 0 }"
             >
               <el-image :src="img" fit="cover" class="image-preview" />
+              <div v-if="index === 0" class="cover-badge">封面</div>
               <div class="image-actions">
+                <el-button
+                  v-if="index !== 0"
+                  type="primary"
+                  size="small"
+                  circle
+                  title="设为封面"
+                  @click="setAsCover(index)"
+                >
+                  ★
+                </el-button>
                 <el-button type="danger" size="small" circle @click="removeImage(index)">
                   ×
                 </el-button>
               </div>
             </div>
-            <div class="image-upload" @click="addSampleImage">
+            <div class="image-upload" @click="triggerUpload" v-loading="uploading">
+              <el-icon :size="32"><Upload /></el-icon>
+              <span>上传图片</span>
+            </div>
+            <div class="image-upload sample" @click="addSampleImage">
               <el-icon :size="32"><Plus /></el-icon>
-              <span>添加图片</span>
+              <span>示例图片</span>
             </div>
           </div>
-          <div class="image-tip">点击添加示例图片（实际项目中应上传真实图片）</div>
+          <input
+            ref="fileInputRef"
+            type="file"
+            accept="image/*"
+            multiple
+            style="display: none"
+            @change="handleFileChange"
+          />
+          <div class="image-tip">
+            支持 JPG、PNG 格式，单张不超过 5MB，第一张为封面图
+          </div>
         </el-form-item>
 
         <!-- 描述信息 -->
@@ -516,9 +589,34 @@ function removeImage(index: number) {
   color: #409eff;
 }
 
+.image-upload.sample {
+  border-style: dotted;
+}
+
+.image-upload.sample:hover {
+  border-color: #67c23a;
+  color: #67c23a;
+}
+
 .image-upload span {
   font-size: 12px;
   margin-top: 4px;
+}
+
+.image-item.is-cover {
+  border: 2px solid #409eff;
+  border-radius: 4px;
+}
+
+.cover-badge {
+  position: absolute;
+  top: 0;
+  left: 0;
+  background: #409eff;
+  color: #fff;
+  font-size: 10px;
+  padding: 2px 6px;
+  border-radius: 0 0 4px 0;
 }
 
 .image-tip {

@@ -1,0 +1,41 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html,
+body,
+#app {
+    height: 100%;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+:root {
+    --primary-color: #1989fa;
+    --success-color: #07c160;
+    --warning-color: #ff976a;
+    --danger-color: #ee0a24;
+    --text-color: #323233;
+    --text-color-2: #969799;
+    --text-color-3: #c8c9cc;
+    --border-color: #ebedf0;
+    --background-color: #f7f8fa;
+}
+
+.page {
+    min-height: 100vh;
+    background-color: var(--background-color);
+}
+
+.price {
+    color: #ee0a24;
+    font-weight: 600;
+}
+
+.price::before {
+    content: '¥';
+    font-size: 0.8em;
+}

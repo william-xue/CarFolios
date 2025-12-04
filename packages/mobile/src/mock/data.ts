@@ -1,0 +1,206 @@
+import type { Brand, City, CarListItem, CarDetail, UserInfo } from '@/types'
+
+// 品牌数据
+export const brands: Brand[] = [
+    { id: 1, name: '宝马', logo: 'https://img.icons8.com/color/96/bmw.png', initial: 'B' },
+    { id: 2, name: '奔驰', logo: 'https://img.icons8.com/color/96/mercedes-benz.png', initial: 'B' },
+    { id: 3, name: '奥迪', logo: 'https://img.icons8.com/color/96/audi.png', initial: 'A' },
+    { id: 4, name: '大众', logo: 'https://img.icons8.com/color/96/volkswagen.png', initial: 'D' },
+    { id: 5, name: '丰田', logo: 'https://img.icons8.com/color/96/toyota.png', initial: 'F' },
+    { id: 6, name: '本田', logo: 'https://img.icons8.com/color/96/honda.png', initial: 'B' },
+    { id: 7, name: '特斯拉', logo: 'https://img.icons8.com/color/96/tesla-logo.png', initial: 'T' },
+    { id: 8, name: '比亚迪', logo: '', initial: 'B' },
+]
+
+// 车系数据
+export const seriesData: Record<number, { id: number; brandId: number; name: string }[]> = {
+    1: [
+        { id: 101, brandId: 1, name: '3系' },
+        { id: 102, brandId: 1, name: '5系' },
+        { id: 103, brandId: 1, name: 'X3' },
+        { id: 104, brandId: 1, name: 'X5' },
+    ],
+    2: [
+        { id: 201, brandId: 2, name: 'C级' },
+        { id: 202, brandId: 2, name: 'E级' },
+        { id: 203, brandId: 2, name: 'GLC' },
+    ],
+    3: [
+        { id: 301, brandId: 3, name: 'A4L' },
+        { id: 302, brandId: 3, name: 'A6L' },
+        { id: 303, brandId: 3, name: 'Q5L' },
+    ],
+}
+
+// 城市数据
+export const cities: City[] = [
+    { code: '110100', name: '北京', province: '北京' },
+    { code: '310100', name: '上海', province: '上海' },
+    { code: '440100', name: '广州', province: '广东' },
+    { code: '440300', name: '深圳', province: '广东' },
+    { code: '330100', name: '杭州', province: '浙江' },
+    { code: '320100', name: '南京', province: '江苏' },
+    { code: '510100', name: '成都', province: '四川' },
+]
+
+// 车辆图片
+const carImages = [
+    'https://images.unsplash.com/photo-1555215695-3004980ad54e?w=800',
+    'https://images.unsplash.com/photo-1494976388531-d1058494cdd8?w=800',
+    'https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=800',
+    'https://images.unsplash.com/photo-1542362567-b07e54358753?w=800',
+    'https://images.unsplash.com/photo-1552519507-da3b142c6e3d?w=800',
+    'https://images.unsplash.com/photo-1583121274602-3e2820c69888?w=800',
+]
+
+// 车源列表数据
+export const carList: CarListItem[] = [
+    {
+        id: 1,
+        title: '宝马3系 2021款 325Li M运动套装',
+        coverImage: carImages[0],
+        price: 26.8,
+        mileage: 3.5,
+        firstRegDate: '2021-06',
+        cityName: '北京',
+        sourceType: 'platform',
+        tags: ['准新车', '4S店保养'],
+    },
+    {
+        id: 2,
+        title: '奔驰C级 2022款 C260L 运动版',
+        coverImage: carImages[1],
+        price: 28.5,
+        mileage: 2.1,
+        firstRegDate: '2022-03',
+        cityName: '上海',
+        sourceType: 'platform',
+        tags: ['准新车', '原版原漆'],
+    },
+    {
+        id: 3,
+        title: '奥迪A4L 2020款 45 TFSI quattro',
+        coverImage: carImages[2],
+        price: 22.8,
+        mileage: 5.8,
+        firstRegDate: '2020-08',
+        cityName: '广州',
+        sourceType: 'personal',
+        tags: ['四驱', '一手车'],
+    },
+    {
+        id: 4,
+        title: '大众迈腾 2021款 380TSI 旗舰型',
+        coverImage: carImages[3],
+        price: 18.5,
+        mileage: 4.2,
+        firstRegDate: '2021-01',
+        cityName: '深圳',
+        sourceType: 'personal',
+        tags: ['顶配', '无事故'],
+    },
+    {
+        id: 5,
+        title: '特斯拉Model 3 2023款 长续航版',
+        coverImage: carImages[4],
+        price: 23.9,
+        mileage: 1.2,
+        firstRegDate: '2023-05',
+        cityName: '杭州',
+        sourceType: 'dealer',
+        tags: ['新能源', '准新车'],
+    },
+    {
+        id: 6,
+        title: '保时捷Cayenne 2020款 3.0T',
+        coverImage: carImages[5],
+        price: 68.8,
+        mileage: 3.8,
+        firstRegDate: '2020-12',
+        cityName: '成都',
+        sourceType: 'dealer',
+        tags: ['豪华SUV', '高配'],
+    },
+]
+
+// 车源详情
+export const carDetails: Record<number, CarDetail> = {
+    1: {
+        id: 1,
+        title: '宝马3系 2021款 325Li M运动套装',
+        ownerId: 1,
+        ownerName: '平台自营',
+        ownerAvatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=platform',
+        ownerMobile: '400-888-8888',
+        sourceType: 'platform',
+        brandId: 1,
+        brandName: '宝马',
+        seriesId: 101,
+        seriesName: '3系',
+        firstRegDate: '2021-06',
+        mileage: 3.5,
+        displacement: 2.0,
+        gearbox: 'AT',
+        emissionStandard: '国六',
+        useType: 'family',
+        transferCount: 0,
+        cityCode: '110100',
+        cityName: '北京',
+        address: '北京市朝阳区望京SOHO',
+        price: 26.8,
+        originalPrice: 34.5,
+        status: 'on',
+        coverImage: carImages[0],
+        images: [carImages[0], carImages[1], carImages[2], carImages[3]],
+        highlightDesc: '一手车主，全程4S店保养，无事故无泡水，车况极佳',
+        color: '白色',
+        plateCity: '京',
+        configs: ['全景天窗', '真皮座椅', '自动泊车', '360全景影像', '自适应巡航'],
+        createdAt: '2024-11-01T10:00:00Z',
+    },
+    2: {
+        id: 2,
+        title: '奔驰C级 2022款 C260L 运动版',
+        ownerId: 1,
+        ownerName: '平台自营',
+        ownerAvatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=platform',
+        ownerMobile: '400-888-8888',
+        sourceType: 'platform',
+        brandId: 2,
+        brandName: '奔驰',
+        seriesId: 201,
+        seriesName: 'C级',
+        firstRegDate: '2022-03',
+        mileage: 2.1,
+        displacement: 1.5,
+        gearbox: 'AT',
+        emissionStandard: '国六',
+        useType: 'family',
+        transferCount: 0,
+        cityCode: '310100',
+        cityName: '上海',
+        address: '上海市浦东新区陆家嘴',
+        price: 28.5,
+        originalPrice: 36.8,
+        status: 'on',
+        coverImage: carImages[1],
+        images: [carImages[1], carImages[2], carImages[3]],
+        highlightDesc: '准新车，公里数极少，内饰如新',
+        color: '黑色',
+        plateCity: '沪',
+        configs: ['全景天窗', '柏林之声音响', '自适应巡航'],
+        createdAt: '2024-10-15T14:30:00Z',
+    },
+}
+
+// 默认用户
+export const defaultUser: UserInfo = {
+    id: 1,
+    mobile: '138****1234',
+    nickname: '车故用户',
+    avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=user1',
+    authStatus: 'unverified',
+    balance: 0,
+    totalOrders: 0,
+    totalCars: 0,
+}

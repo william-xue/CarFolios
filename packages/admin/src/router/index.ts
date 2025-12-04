@@ -50,6 +50,18 @@ const routes: RouteRecordRaw[] = [
                 component: () => import('@/views/audit/index.vue'),
                 meta: { title: '审核中心', icon: 'Checked' },
             },
+            {
+                path: 'users',
+                name: 'Users',
+                component: () => import('@/views/user/list.vue'),
+                meta: { title: '用户管理', icon: 'User' },
+            },
+            {
+                path: 'orders',
+                name: 'Orders',
+                component: () => import('@/views/order/list.vue'),
+                meta: { title: '订单管理', icon: 'List' },
+            },
         ],
     },
 ]

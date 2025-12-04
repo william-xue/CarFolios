@@ -12,9 +12,13 @@ const stats = ref<DashboardStats>({
   onlineCars: 0,
   pendingCars: 0,
   totalOrders: 0,
+  pendingOrders: 0,
+  completedOrders: 0,
   totalUsers: 0,
   todayNewCars: 0,
   todayNewOrders: 0,
+  todayNewUsers: 0,
+  totalRevenue: 0,
 })
 
 onMounted(async () => {
@@ -35,6 +39,14 @@ function goToAudit() {
 
 function goToCreateCar() {
   router.push('/cars/create')
+}
+
+function goToUsers() {
+  router.push('/users')
+}
+
+function goToOrders() {
+  router.push('/orders')
 }
 </script>
 
@@ -77,7 +89,7 @@ function goToCreateCar() {
       </el-col>
 
       <el-col :span="6">
-        <el-card shadow="hover" class="stat-card">
+        <el-card shadow="hover" class="stat-card" @click="goToOrders">
           <div class="stat-content">
             <div class="stat-icon" style="background: #52c41a">
               <el-icon :size="28"><ShoppingCart /></el-icon>
@@ -88,13 +100,13 @@ function goToCreateCar() {
             </div>
           </div>
           <div class="stat-footer">
-            <span>今日新增 {{ stats.todayNewOrders }} 单</span>
+            <span>待处理 {{ stats.pendingOrders }} 单 | 已完成 {{ stats.completedOrders }} 单</span>
           </div>
         </el-card>
       </el-col>
 
       <el-col :span="6">
-        <el-card shadow="hover" class="stat-card">
+        <el-card shadow="hover" class="stat-card" @click="goToUsers">
           <div class="stat-content">
             <div class="stat-icon" style="background: #722ed1">
               <el-icon :size="28"><User /></el-icon>
@@ -105,7 +117,41 @@ function goToCreateCar() {
             </div>
           </div>
           <div class="stat-footer">
-            <span>活跃用户</span>
+            <span>今日新增 {{ stats.todayNewUsers }} 人</span>
+          </div>
+        </el-card>
+      </el-col>
+    </el-row>
+
+    <!-- 收入统计 -->
+    <el-row :gutter="24" class="stat-cards">
+      <el-col :span="8">
+        <el-card shadow="hover" class="stat-card revenue-card">
+          <div class="stat-content">
+            <div class="stat-info">
+              <div class="stat-label">平台收入（定金）</div>
+              <div class="stat-value revenue">¥{{ stats.totalRevenue.toLocaleString() }}</div>
+            </div>
+          </div>
+        </el-card>
+      </el-col>
+      <el-col :span="8">
+        <el-card shadow="hover" class="stat-card">
+          <div class="stat-content">
+            <div class="stat-info">
+              <div class="stat-label">今日新增车源</div>
+              <div class="stat-value">{{ stats.todayNewCars }}</div>
+            </div>
+          </div>
+        </el-card>
+      </el-col>
+      <el-col :span="8">
+        <el-card shadow="hover" class="stat-card">
+          <div class="stat-content">
+            <div class="stat-info">
+              <div class="stat-label">今日新增订单</div>
+              <div class="stat-value">{{ stats.todayNewOrders }}</div>
+            </div>
           </div>
         </el-card>
       </el-col>
@@ -117,22 +163,34 @@ function goToCreateCar() {
         <span>快捷操作</span>
       </template>
       <el-row :gutter="16">
-        <el-col :span="6">
+        <el-col :span="4">
           <el-button type="primary" size="large" class="action-btn" @click="goToCreateCar">
             <el-icon><Van /></el-icon>
             发布车源
           </el-button>
         </el-col>
-        <el-col :span="6">
+        <el-col :span="4">
           <el-button size="large" class="action-btn" @click="goToAudit">
             <el-icon><Document /></el-icon>
             审核车源
           </el-button>
         </el-col>
-        <el-col :span="6">
+        <el-col :span="4">
           <el-button size="large" class="action-btn" @click="goToCars">
             <el-icon><Van /></el-icon>
             管理车源
+          </el-button>
+        </el-col>
+        <el-col :span="4">
+          <el-button size="large" class="action-btn" @click="goToUsers">
+            <el-icon><User /></el-icon>
+            用户管理
+          </el-button>
+        </el-col>
+        <el-col :span="4">
+          <el-button size="large" class="action-btn" @click="goToOrders">
+            <el-icon><ShoppingCart /></el-icon>
+            订单管理
           </el-button>
         </el-col>
       </el-row>
@@ -211,6 +269,20 @@ function goToCreateCar() {
   border-top: 1px solid #f0f0f0;
   font-size: 13px;
   color: #666;
+}
+
+.revenue-card {
+  background: linear-gradient(135deg, #52c41a 0%, #389e0d 100%);
+  color: #fff;
+}
+
+.revenue-card .stat-label {
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.revenue-card .stat-value.revenue {
+  color: #fff;
+  font-size: 32px;
 }
 
 .quick-actions {

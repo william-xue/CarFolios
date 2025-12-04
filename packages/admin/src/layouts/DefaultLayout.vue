@@ -10,6 +10,7 @@ import {
   Fold,
   User,
   SwitchButton,
+  List,
 } from '@element-plus/icons-vue'
 import { ElMessageBox } from 'element-plus'
 
@@ -23,6 +24,8 @@ const menuItems = [
   { path: '/dashboard', title: '工作台', icon: Odometer },
   { path: '/cars', title: '车源管理', icon: Van },
   { path: '/audit', title: '审核中心', icon: Checked },
+  { path: '/users', title: '用户管理', icon: User },
+  { path: '/orders', title: '订单管理', icon: List },
 ]
 
 const activeMenu = computed(() => {
