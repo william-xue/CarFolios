@@ -55,8 +55,13 @@ export const useCarStore = defineStore('car', () => {
         cities.value = await mockGetCities()
     }
 
+    // 别名，兼容不同命名
+    const cars = carList
+    const fetchCars = fetchCarList
+
     return {
         carList,
+        cars,
         currentCar,
         recommendCars,
         brands,
@@ -65,6 +70,7 @@ export const useCarStore = defineStore('car', () => {
         total,
         loading,
         fetchCarList,
+        fetchCars,
         fetchCarDetail,
         fetchRecommendCars,
         fetchBrands,

@@ -64,6 +64,7 @@ export const carList: CarListItem[] = [
         firstRegDate: '2021-06',
         cityName: '北京',
         sourceType: 'platform',
+        gearbox: 'AT',
         tags: ['准新车', '4S店保养'],
     },
     {
@@ -75,6 +76,7 @@ export const carList: CarListItem[] = [
         firstRegDate: '2022-03',
         cityName: '上海',
         sourceType: 'platform',
+        gearbox: 'AT',
         tags: ['准新车', '原版原漆'],
     },
     {
@@ -86,6 +88,7 @@ export const carList: CarListItem[] = [
         firstRegDate: '2020-08',
         cityName: '广州',
         sourceType: 'personal',
+        gearbox: 'DCT',
         tags: ['四驱', '一手车'],
     },
     {
@@ -97,6 +100,7 @@ export const carList: CarListItem[] = [
         firstRegDate: '2021-01',
         cityName: '深圳',
         sourceType: 'personal',
+        gearbox: 'DCT',
         tags: ['顶配', '无事故'],
     },
     {
@@ -108,6 +112,7 @@ export const carList: CarListItem[] = [
         firstRegDate: '2023-05',
         cityName: '杭州',
         sourceType: 'dealer',
+        gearbox: 'AT',
         tags: ['新能源', '准新车'],
     },
     {
@@ -119,6 +124,7 @@ export const carList: CarListItem[] = [
         firstRegDate: '2020-12',
         cityName: '成都',
         sourceType: 'dealer',
+        gearbox: 'AT',
         tags: ['豪华SUV', '高配'],
     },
 ]

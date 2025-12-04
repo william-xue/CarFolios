@@ -33,6 +33,7 @@ export interface CarListItem {
     firstRegDate: string
     cityName: string
     sourceType: SourceType
+    gearbox?: GearboxType
     tags?: string[]
 }
 
