@@ -1,0 +1,138 @@
+// Prisma Schema - 车故二手车交易平台
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+// 管理员
+model Admin {
+  id        Int      @id @default(autoincrement())
+  username  String   @unique
+  password  String
+  nickname  String?
+  avatar    String?
+  role      String   @default("admin") // admin, super_admin
+  status    Int      @default(1) // 0-禁用 1-启用
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// 平台用户
+model User {
+  id         Int      @id @default(autoincrement())
+  mobile     String   @unique
+  password   String?
+  nickname   String?
+  avatar     String?
+  realName   String?
+  idCard     String?
+  authStatus String   @default("unverified") // unverified, pending, verified, rejected
+  balance    Float    @default(0)
+  status     Int      @default(1) // 0-禁用 1-启用
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  cars       Car[]
+  buyOrders  Order[]  @relation("BuyerOrders")
+  sellOrders Order[]  @relation("SellerOrders")
+}
+
+// 品牌
+model Brand {
+  id      Int      @id @default(autoincrement())
+  name    String   @unique
+  logo    String?
+  initial String   // 首字母
+  sort    Int      @default(0)
+  status  Int      @default(1)
+  series  Series[]
+  cars    Car[]
+}
+
+// 车系
+model Series {
+  id      Int    @id @default(autoincrement())
+  brandId Int
+  name    String
+  sort    Int    @default(0)
+  status  Int    @default(1)
+  brand   Brand  @relation(fields: [brandId], references: [id])
+  cars    Car[]
+}
+
+// 车源
+model Car {
+  id               Int      @id @default(autoincrement())
+  title            String
+  ownerId          Int
+  sourceType       String   @default("personal") // personal, dealer, platform
+  brandId          Int
+  seriesId         Int
+  firstRegDate     String   // 首次上牌日期
+  mileage          Float    // 里程(万公里)
+  displacement     Float?   // 排量
+  gearbox          String?  // MT, AT, DCT, CVT
+  emissionStandard String?  // 国三, 国四, 国五, 国六
+  useType          String?  // family, business, official
+  transferCount    Int      @default(0) // 过户次数
+  cityCode         String?
+  cityName         String?
+  address          String?
+  price            Float    // 售价(万)
+  originalPrice    Float?   // 新车指导价
+  status           String   @default("pending") // draft, pending, approved, on, off, sold, rejected
+  coverImage       String?
+  images           String?  // JSON数组
+  video            String?
+  highlightDesc    String?  // 车辆亮点
+  color            String?
+  plateCity        String?  // 牌照城市
+  configs          String?  // JSON数组 - 配置
+  rejectReason     String?  // 驳回原因
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  owner  User     @relation(fields: [ownerId], references: [id])
+  brand  Brand    @relation(fields: [brandId], references: [id])
+  series Series   @relation(fields: [seriesId], references: [id])
+  orders Order[]
+}
+
+// 订单
+model Order {
+  id            Int      @id @default(autoincrement())
+  orderNo       String   @unique
+  carId         Int
+  buyerId       Int
+  sellerId      Int
+  carTitle      String
+  carImage      String?
+  carPrice      Float
+  depositAmount Float    // 定金
+  status        String   @default("pending") // pending, paid, closed, cancelled, refunded
+  payTime       DateTime?
+  closeTime     DateTime?
+  remark        String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  car    Car  @relation(fields: [carId], references: [id])
+  buyer  User @relation("BuyerOrders", fields: [buyerId], references: [id])
+  seller User @relation("SellerOrders", fields: [sellerId], references: [id])
+}
+
+// 文件上传记录
+model Upload {
+  id        Int      @id @default(autoincrement())
+  filename  String
+  path      String
+  mimetype  String
+  size      Int
+  userId    Int?
+  createdAt DateTime @default(now())
+}
