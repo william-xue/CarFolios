@@ -135,3 +135,17 @@ export interface PageResult<T> {
     page: number
     pageSize: number
 }
+
+// 支付类型
+export type PaymentChannel = 'wechat' | 'alipay'
+export type PaymentStatus = 'pending' | 'paid' | 'closed' | 'refunded'
+
+export interface PaymentInfo {
+    paymentId: number
+    paymentNo: string
+    channel: PaymentChannel
+    amount: number
+    status: PaymentStatus
+    expireTime: string
+    paidAt?: string
+}

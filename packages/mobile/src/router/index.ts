@@ -54,6 +54,18 @@ const routes: RouteRecordRaw[] = [
         component: () => import('@/views/user/my-orders.vue'),
         meta: { title: '我的订单', requiresAuth: true },
     },
+    {
+        path: '/payment/:orderId',
+        name: 'Payment',
+        component: () => import('@/views/payment/index.vue'),
+        meta: { title: '确认支付', requiresAuth: true },
+    },
+    {
+        path: '/payment/result/:paymentId',
+        name: 'PaymentResult',
+        component: () => import('@/views/payment/result.vue'),
+        meta: { title: '支付结果', requiresAuth: true },
+    },
 ]
 
 const router = createRouter({

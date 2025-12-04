@@ -15,4 +15,12 @@ export class StatsController {
     getDashboardStats() {
         return this.statsService.getDashboardStats()
     }
+
+    @Get('payment')
+    @UseGuards(JwtAuthGuard)
+    @ApiBearerAuth()
+    @ApiOperation({ summary: '获取支付统计数据' })
+    getPaymentStats() {
+        return this.statsService.getPaymentStats()
+    }
 }

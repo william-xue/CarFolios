@@ -1,5 +1,7 @@
 import { Module } from '@nestjs/common'
 import { JwtModule } from '@nestjs/jwt'
+import { ConfigModule } from '@nestjs/config'
+import { ScheduleModule } from '@nestjs/schedule'
 import { PrismaModule } from './prisma/prisma.module'
 import { AuthModule } from './modules/auth/auth.module'
 import { UserModule } from './modules/user/user.module'
@@ -8,9 +10,15 @@ import { OrderModule } from './modules/order/order.module'
 import { UploadModule } from './modules/upload/upload.module'
 import { BrandModule } from './modules/brand/brand.module'
 import { StatsModule } from './modules/stats/stats.module'
+import { PaymentModule } from './modules/payment/payment.module'
 
 @Module({
     imports: [
+        ConfigModule.forRoot({
+            isGlobal: true,
+            envFilePath: ['.env.local', '.env'],
+        }),
+        ScheduleModule.forRoot(),
         JwtModule.register({
             global: true,
             secret: 'car-trading-secret-key',
@@ -24,6 +32,7 @@ import { StatsModule } from './modules/stats/stats.module'
         UploadModule,
         BrandModule,
         StatsModule,
+        PaymentModule,
     ],
 })
 export class AppModule { }

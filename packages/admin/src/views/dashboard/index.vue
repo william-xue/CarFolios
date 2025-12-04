@@ -2,8 +2,9 @@
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { getDashboardStats } from '@/api'
+import { getPaymentStats, type PaymentStats } from '@/api/payment'
 import type { DashboardStats } from '@/types'
-import { Van, Document, User, ShoppingCart } from '@element-plus/icons-vue'
+import { Van, Document, User, ShoppingCart, Wallet } from '@element-plus/icons-vue'
 
 const router = useRouter()
 const loading = ref(true)
@@ -21,9 +22,16 @@ const stats = ref<DashboardStats>({
   totalRevenue: 0,
 })
 
+const paymentStats = ref<PaymentStats | null>(null)
+
 onMounted(async () => {
   try {
-    stats.value = await getDashboardStats()
+    const [dashboardData, paymentData] = await Promise.all([
+      getDashboardStats(),
+      getPaymentStats().then(res => res.data).catch(() => null),
+    ])
+    stats.value = dashboardData
+    paymentStats.value = paymentData
   } finally {
     loading.value = false
   }
@@ -47,6 +55,15 @@ function goToUsers() {
 
 function goToOrders() {
   router.push('/orders')
+}
+
+function goToPayments() {
+  router.push('/payments')
+}
+
+// 格式化金额（分转元）
+function formatAmount(amount: number) {
+  return (amount / 100).toFixed(2)
 }
 </script>
 
@@ -123,14 +140,73 @@ function goToOrders() {
       </el-col>
     </el-row>
 
+    <!-- 支付统计 -->
+    <el-row :gutter="24" class="stat-cards" v-if="paymentStats">
+      <el-col :span="6">
+        <el-card shadow="hover" class="stat-card payment-card" @click="goToPayments">
+          <div class="stat-content">
+            <div class="stat-icon" style="background: #ff6b00">
+              <el-icon :size="28"><Wallet /></el-icon>
+            </div>
+            <div class="stat-info">
+              <div class="stat-value">¥{{ formatAmount(paymentStats.today.amount) }}</div>
+              <div class="stat-label">今日支付金额</div>
+            </div>
+          </div>
+          <div class="stat-footer">
+            <span>{{ paymentStats.today.count }} 笔订单</span>
+          </div>
+        </el-card>
+      </el-col>
+      <el-col :span="6">
+        <el-card shadow="hover" class="stat-card" @click="goToPayments">
+          <div class="stat-content">
+            <div class="stat-info">
+              <div class="stat-value">¥{{ formatAmount(paymentStats.week.amount) }}</div>
+              <div class="stat-label">本周支付金额</div>
+            </div>
+          </div>
+          <div class="stat-footer">
+            <span>{{ paymentStats.week.count }} 笔订单</span>
+          </div>
+        </el-card>
+      </el-col>
+      <el-col :span="6">
+        <el-card shadow="hover" class="stat-card" @click="goToPayments">
+          <div class="stat-content">
+            <div class="stat-info">
+              <div class="stat-value">¥{{ formatAmount(paymentStats.month.amount) }}</div>
+              <div class="stat-label">本月支付金额</div>
+            </div>
+          </div>
+          <div class="stat-footer">
+            <span>{{ paymentStats.month.count }} 笔订单</span>
+          </div>
+        </el-card>
+      </el-col>
+      <el-col :span="6">
+        <el-card shadow="hover" class="stat-card revenue-card" @click="goToPayments">
+          <div class="stat-content">
+            <div class="stat-info">
+              <div class="stat-label">累计支付金额</div>
+              <div class="stat-value revenue">¥{{ formatAmount(paymentStats.total.amount) }}</div>
+            </div>
+          </div>
+          <div class="stat-footer" style="color: rgba(255,255,255,0.8)">
+            <span>微信 {{ paymentStats.byChannel.wechat.count }} 笔 | 支付宝 {{ paymentStats.byChannel.alipay.count }} 笔</span>
+          </div>
+        </el-card>
+      </el-col>
+    </el-row>
+
     <!-- 收入统计 -->
     <el-row :gutter="24" class="stat-cards">
       <el-col :span="8">
-        <el-card shadow="hover" class="stat-card revenue-card">
+        <el-card shadow="hover" class="stat-card">
           <div class="stat-content">
             <div class="stat-info">
               <div class="stat-label">平台收入（定金）</div>
-              <div class="stat-value revenue">¥{{ stats.totalRevenue.toLocaleString() }}</div>
+              <div class="stat-value" style="color: #52c41a">¥{{ stats.totalRevenue.toLocaleString() }}</div>
             </div>
           </div>
         </el-card>
@@ -191,6 +267,12 @@ function goToOrders() {
           <el-button size="large" class="action-btn" @click="goToOrders">
             <el-icon><ShoppingCart /></el-icon>
             订单管理
+          </el-button>
+        </el-col>
+        <el-col :span="4">
+          <el-button size="large" class="action-btn" @click="goToPayments">
+            <el-icon><Wallet /></el-icon>
+            支付管理
           </el-button>
         </el-col>
       </el-row>

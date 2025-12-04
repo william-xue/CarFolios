@@ -38,8 +38,9 @@ model User {
   updatedAt  DateTime @updatedAt
 
   cars       Car[]
-  buyOrders  Order[]  @relation("BuyerOrders")
-  sellOrders Order[]  @relation("SellerOrders")
+  buyOrders  Order[]   @relation("BuyerOrders")
+  sellOrders Order[]   @relation("SellerOrders")
+  payments   Payment[]
 }
 
 // 品牌
@@ -121,9 +122,10 @@ model Order {
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 
-  car    Car  @relation(fields: [carId], references: [id])
-  buyer  User @relation("BuyerOrders", fields: [buyerId], references: [id])
-  seller User @relation("SellerOrders", fields: [sellerId], references: [id])
+  car      Car       @relation(fields: [carId], references: [id])
+  buyer    User      @relation("BuyerOrders", fields: [buyerId], references: [id])
+  seller   User      @relation("SellerOrders", fields: [sellerId], references: [id])
+  payments Payment[]
 }
 
 // 文件上传记录
@@ -135,4 +137,47 @@ model Upload {
   size      Int
   userId    Int?
   createdAt DateTime @default(now())
+}
+
+// 支付订单
+model Payment {
+  id             Int       @id @default(autoincrement())
+  paymentNo      String    @unique                    // 商户支付订单号（≤32位）
+  orderId        Int                                  // 关联业务订单
+  userId         Int                                  // 支付用户
+  channel        String                               // 支付渠道: wechat, alipay
+  clientType     String                               // 客户端类型: h5, pc, app
+  amount         Int                                  // 支付金额(分)
+  status         String    @default("pending")        // pending, paid, closed, refunded
+  channelTradeNo String?                              // 支付渠道交易号
+  clientIp       String?                              // 客户端IP
+  expireTime     DateTime                             // 过期时间
+  paidAt         DateTime?                            // 支付时间
+  closedAt       DateTime?                            // 关闭时间
+  refundedAt     DateTime?                            // 退款时间
+  refundAmount   Int?                                 // 退款金额(分)
+  refundReason   String?                              // 退款原因
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  order Order        @relation(fields: [orderId], references: [id])
+  user  User         @relation(fields: [userId], references: [id])
+  logs  PaymentLog[]
+}
+
+// 支付日志
+model PaymentLog {
+  id           Int      @id @default(autoincrement())
+  paymentId    Int                                    // 关联支付订单
+  action       String                                 // 操作类型: create, callback, query, refund, close
+  status       String                                 // 操作前状态
+  newStatus    String?                                // 操作后状态
+  requestData  String?                                // 请求数据(脱敏后)
+  responseData String?                                // 响应数据(脱敏后)
+  errorMessage String?                                // 错误信息
+  operatorId   Int?                                   // 操作人(管理员ID)
+  clientIp     String?                                // 请求IP
+  createdAt    DateTime @default(now())
+
+  payment Payment @relation(fields: [paymentId], references: [id])
 }
