@@ -1,7 +1,7 @@
-import { defineStore } from 'pinia'
-import { ref, computed } from 'vue'
+import { getUserInfo, login as loginApi, sendVerifyCode as sendCodeApi } from '@/api/auth'
 import type { UserInfo } from '@/types'
-import { login as loginApi, sendVerifyCode as sendCodeApi, getUserInfo } from '@/api/auth'
+import { defineStore } from 'pinia'
+import { computed, ref } from 'vue'
 
 const TOKEN_KEY = 'carfolios_token'
 const USER_KEY = 'carfolios_user'
@@ -20,11 +20,11 @@ export const useUserStore = defineStore('user', () => {
     // 登录
     async function login(mobile: string, code: string) {
         const res = await loginApi(mobile, code)
-        token.value = res.token
+        token.value = res.access_token
         user.value = res.user
 
         // 持久化存储
-        localStorage.setItem(TOKEN_KEY, res.token)
+        localStorage.setItem(TOKEN_KEY, res.access_token)
         localStorage.setItem(USER_KEY, JSON.stringify(res.user))
     }
 

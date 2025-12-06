@@ -77,6 +77,51 @@ export class CreateCarDto {
     @IsOptional()
     @IsArray()
     configs?: string[]
+
+    @ApiPropertyOptional({ description: 'VIN码' })
+    @IsOptional()
+    @IsString()
+    vin?: string
+
+    @ApiPropertyOptional({ description: '车牌号' })
+    @IsOptional()
+    @IsString()
+    plateNumber?: string
+
+    @ApiPropertyOptional({ description: '发动机号' })
+    @IsOptional()
+    @IsString()
+    engineNumber?: string
+
+    @ApiPropertyOptional({ description: '省份ID' })
+    @IsOptional()
+    @Type(() => Number)
+    provinceId?: number
+
+    @ApiPropertyOptional({ description: '省份名称' })
+    @IsOptional()
+    @IsString()
+    provinceName?: string
+
+    @ApiPropertyOptional({ description: '区县ID' })
+    @IsOptional()
+    @Type(() => Number)
+    districtId?: number
+
+    @ApiPropertyOptional({ description: '区县名称' })
+    @IsOptional()
+    @IsString()
+    districtName?: string
+
+    @ApiPropertyOptional({ description: '纬度' })
+    @IsOptional()
+    @Type(() => Number)
+    lat?: number
+
+    @ApiPropertyOptional({ description: '经度' })
+    @IsOptional()
+    @Type(() => Number)
+    lng?: number
 }
 
 export class UpdateCarDto extends CreateCarDto {
@@ -127,4 +172,53 @@ export class AuditCarDto {
     @IsOptional()
     @IsString()
     reason?: string
+}
+
+export class LocationQueryDto {
+    @ApiPropertyOptional({ description: '省份ID' })
+    @IsOptional()
+    @Type(() => Number)
+    provinceId?: number
+
+    @ApiPropertyOptional({ description: '城市ID' })
+    @IsOptional()
+    @Type(() => Number)
+    cityId?: number
+
+    @ApiPropertyOptional({ description: '区县ID' })
+    @IsOptional()
+    @Type(() => Number)
+    districtId?: number
+
+    @ApiPropertyOptional({ description: '纬度' })
+    @IsOptional()
+    @Type(() => Number)
+    lat?: number
+
+    @ApiPropertyOptional({ description: '经度' })
+    @IsOptional()
+    @Type(() => Number)
+    lng?: number
+
+    @ApiPropertyOptional({ description: '搜索半径(km)' })
+    @IsOptional()
+    @Type(() => Number)
+    radius?: number
+}
+
+export class ArchivedCarQueryDto {
+    @ApiPropertyOptional()
+    @IsOptional()
+    @Type(() => Number)
+    page?: number = 1
+
+    @ApiPropertyOptional()
+    @IsOptional()
+    @Type(() => Number)
+    pageSize?: number = 10
+
+    @ApiPropertyOptional({ description: '关键词搜索' })
+    @IsOptional()
+    @IsString()
+    keyword?: string
 }

@@ -12,7 +12,14 @@ export const useCarStore = defineStore('car', () => {
     const total = ref(0)
     const loading = ref(false)
 
-    async function fetchCarList(params: { page: number; pageSize: number; keyword?: string; brandId?: number }) {
+    async function fetchCarList(params: {
+        page: number
+        pageSize: number
+        keyword?: string
+        brandId?: number
+        provinceId?: number
+        cityId?: number
+    }) {
         loading.value = true
         try {
             const res = await carApi.getOnSaleCars(params)

@@ -1,7 +1,7 @@
-import { NestFactory } from '@nestjs/core'
 import { ValidationPipe } from '@nestjs/common'
-import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger'
+import { NestFactory } from '@nestjs/core'
 import { NestExpressApplication } from '@nestjs/platform-express'
+import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger'
 import { join } from 'path'
 import { AppModule } from './app.module'
 
@@ -16,7 +16,7 @@ async function bootstrap() {
 
     // 跨域
     app.enableCors({
-        origin: ['http://localhost:3000', 'http://localhost:3002'],
+        origin: ['http://localhost:3001', 'http://localhost:3002', 'http://localhost:3003'],
         credentials: true,
     })
 
@@ -30,8 +30,8 @@ async function bootstrap() {
 
     // Swagger 文档
     const config = new DocumentBuilder()
-        .setTitle('车故二手车 API')
-        .setDescription('车故二手车交易平台接口文档')
+        .setTitle('爱车出海二手车 API')
+        .setDescription('爱车出海二手车交易平台接口文档')
         .setVersion('1.0')
         .addBearerAuth()
         .build()

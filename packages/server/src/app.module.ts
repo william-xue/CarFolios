@@ -11,6 +11,9 @@ import { UploadModule } from './modules/upload/upload.module'
 import { BrandModule } from './modules/brand/brand.module'
 import { StatsModule } from './modules/stats/stats.module'
 import { PaymentModule } from './modules/payment/payment.module'
+import { RegionModule } from './modules/region/region.module'
+import { NotificationModule } from './modules/notification/notification.module'
+import { SchedulerModule } from './modules/scheduler/scheduler.module'
 
 @Module({
     imports: [
@@ -33,6 +36,9 @@ import { PaymentModule } from './modules/payment/payment.module'
         BrandModule,
         StatsModule,
         PaymentModule,
+        RegionModule,
+        NotificationModule,
+        SchedulerModule,
     ],
 })
 export class AppModule { }

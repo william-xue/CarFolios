@@ -1,5 +1,5 @@
-import { createRouter, createWebHistory } from 'vue-router'
 import type { RouteRecordRaw } from 'vue-router'
+import { createRouter, createWebHistory } from 'vue-router'
 
 const routes: RouteRecordRaw[] = [
     {
@@ -74,7 +74,7 @@ const router = createRouter({
 })
 
 router.beforeEach((to, _from, next) => {
-    document.title = `${to.meta.title || '车故'} - 车故二手车`
+    document.title = `${to.meta.title || '爱车出海'} - 爱车出海二手车`
     next()
 })
 

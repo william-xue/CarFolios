@@ -1,9 +1,14 @@
-import { get, post, patch } from './request'
 import type { Order, PageParams, PageResult } from '@/types'
+import { get, patch, post } from './request'
 
-// 获取我的订单列表
+// 获取我的购买订单列表
 export function getMyOrders(params: PageParams & { status?: string }): Promise<PageResult<Order>> {
-    return get('/orders/my', { params })
+    return get('/orders/my/buy', { params })
+}
+
+// 获取我的出售订单列表
+export function getMySellOrders(params: PageParams & { status?: string }): Promise<PageResult<Order>> {
+    return get('/orders/my/sell', { params })
 }
 
 // 获取订单详情

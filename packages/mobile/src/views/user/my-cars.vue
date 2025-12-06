@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { getMyCars, toggleCarStatus, deleteCar } from '@/api/car'
+import { getMyCars, toggleCarStatus, deleteCar, renewCar, markAsSold } from '@/api/car'
 import { showToast, showConfirmDialog } from 'vant'
 import type { CarListItem, CarStatus } from '@/types'
 
@@ -16,7 +16,30 @@ const statusMap: Record<CarStatus, { text: string; type: 'primary' | 'success' |
   on: { text: '已上架', type: 'success' },
   off: { text: '已下架', type: 'default' },
   sold: { text: '已售出', type: 'danger' },
+  expired: { text: '已过期', type: 'danger' },
   rejected: { text: '已拒绝', type: 'danger' },
+}
+
+// 计算剩余天数
+function getRemainingDays(expireDate: string | undefined): number {
+  if (!expireDate) return 0
+  const expire = new Date(expireDate)
+  const now = new Date()
+  const diffDays = Math.ceil((expire.getTime() - now.getTime()) / (1000 * 60 * 60 * 24))
+  return Math.max(0, diffDays)
+}
+
+// 判断是否即将过期（7天内）
+function isExpiringSoon(expireDate: string | undefined): boolean {
+  if (!expireDate) return false
+  const days = getRemainingDays(expireDate)
+  return days > 0 && days <= 7
+}
+
+// 判断是否已过期
+function isExpired(expireDate: string | undefined): boolean {
+  if (!expireDate) return false
+  return new Date(expireDate).getTime() < Date.now()
 }
 
 onMounted(async () => {
@@ -71,6 +94,40 @@ async function handleDelete(car: CarListItem) {
   }
 }
 
+// 续期
+async function handleRenew(car: CarListItem) {
+  try {
+    await showConfirmDialog({
+      title: '续期车源',
+      message: '续期后有效期将延长30天，确认续期吗？',
+    })
+    await renewCar(car.id)
+    showToast('续期成功')
+    await loadCars()
+  } catch (e: any) {
+    if (e !== 'cancel') {
+      showToast(e.message || '续期失败')
+    }
+  }
+}
+
+// 标记已售
+async function handleMarkSold(car: CarListItem) {
+  try {
+    await showConfirmDialog({
+      title: '标记已售',
+      message: '确认将该车源标记为已售出吗？',
+    })
+    await markAsSold(car.id)
+    showToast('操作成功')
+    await loadCars()
+  } catch (e: any) {
+    if (e !== 'cancel') {
+      showToast(e.message || '操作失败')
+    }
+  }
+}
+
 function getCarStatus(car: any): CarStatus {
   return car.status || 'on'
 }
@@ -106,9 +163,15 @@ function getCarStatus(car: any): CarStatus {
             </div>
             <div class="car-bottom">
               <span class="car-price">{{ car.price }}<small>万</small></span>
-              <van-tag :type="statusMap[getCarStatus(car)]?.type || 'default'">
-                {{ statusMap[getCarStatus(car)]?.text || '未知' }}
-              </van-tag>
+              <div class="car-tags">
+                <van-tag :type="statusMap[getCarStatus(car)]?.type || 'default'">
+                  {{ statusMap[getCarStatus(car)]?.text || '未知' }}
+                </van-tag>
+                <van-tag v-if="isExpired(car.expireDate)" type="danger">已过期</van-tag>
+                <van-tag v-else-if="isExpiringSoon(car.expireDate)" type="warning">
+                  {{ getRemainingDays(car.expireDate) }}天后过期
+                </van-tag>
+              </div>
             </div>
           </div>
         </div>
@@ -121,12 +184,29 @@ function getCarStatus(car: any): CarStatus {
             下架
           </van-button>
           <van-button
-            v-if="getCarStatus(car) === 'off' || getCarStatus(car) === 'approved'"
+            v-if="getCarStatus(car) === 'off' || getCarStatus(car) === 'approved' || getCarStatus(car) === 'expired'"
             size="small"
             type="primary"
             @click="handleToggle(car, 'on')"
           >
             上架
+          </van-button>
+          <van-button
+            v-if="isExpiringSoon(car.expireDate) || isExpired(car.expireDate)"
+            size="small"
+            type="warning"
+            @click="handleRenew(car)"
+          >
+            续期
+          </van-button>
+          <van-button
+            v-if="getCarStatus(car) === 'on'"
+            size="small"
+            type="success"
+            plain
+            @click="handleMarkSold(car)"
+          >
+            已售
           </van-button>
           <van-button
             v-if="getCarStatus(car) !== 'sold'"
@@ -221,12 +301,18 @@ function getCarStatus(car: any): CarStatus {
   font-size: 12px;
 }
 
+.car-tags {
+  display: flex;
+  gap: 4px;
+}
+
 .car-actions {
   display: flex;
   justify-content: flex-end;
   gap: 8px;
   padding: 8px 12px;
   border-top: 1px solid #f5f5f5;
+  flex-wrap: wrap;
 }
 
 .fab-btn {

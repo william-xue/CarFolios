@@ -7,6 +7,7 @@ import { createCar } from '@/api/car'
 import { uploadImage } from '@/api/upload'
 import { showToast, showLoadingToast, closeToast } from 'vant'
 import type { UploaderFileListItem } from 'vant'
+import RegionPicker from '@/components/RegionPicker.vue'
 
 const router = useRouter()
 const userStore = useUserStore()
@@ -22,11 +23,16 @@ const form = ref({
   price: '',
   highlightDesc: '',
   images: [] as UploaderFileListItem[],
+  vin: '',
+  plateNumber: '',
+  regionIds: [] as number[],
+  regionNames: [] as string[],
 })
 
 const showBrandPicker = ref(false)
 const showSeriesPicker = ref(false)
 const showDatePicker = ref(false)
+const showRegionPicker = ref(false)
 const submitting = ref(false)
 
 onMounted(() => {
@@ -62,6 +68,11 @@ function onSeriesConfirm({ selectedOptions }: any) {
 function onDateConfirm({ selectedValues }: any) {
   form.value.firstRegDate = selectedValues.join('-')
   showDatePicker.value = false
+}
+
+function onRegionConfirm({ ids, names }: { ids: number[]; names: string[] }) {
+  form.value.regionIds = ids
+  form.value.regionNames = names
 }
 
 async function afterRead(file: UploaderFileListItem | UploaderFileListItem[]) {
@@ -109,6 +120,11 @@ async function handleSubmit() {
       price: Number(form.value.price),
       highlightDesc: form.value.highlightDesc,
       images,
+      vin: form.value.vin || undefined,
+      plateNumber: form.value.plateNumber || undefined,
+      provinceId: form.value.regionIds[0] || undefined,
+      cityId: form.value.regionIds[1] || undefined,
+      districtId: form.value.regionIds[2] || undefined,
     })
     closeToast()
     showToast('发布成功，等待审核')
@@ -179,6 +195,25 @@ async function handleSubmit() {
         >
           <template #button>万元</template>
         </van-field>
+        <van-field
+          v-model="form.vin"
+          label="车架号"
+          placeholder="17位VIN码（选填）"
+          maxlength="17"
+        />
+        <van-field
+          v-model="form.plateNumber"
+          label="车牌号"
+          placeholder="如：京A12345（选填）"
+        />
+        <van-field
+          :model-value="form.regionNames.join(' ')"
+          label="车辆所在地"
+          placeholder="请选择地区"
+          is-link
+          readonly
+          @click="showRegionPicker = true"
+        />
       </van-cell-group>
 
       <van-cell-group inset title="车辆描述">
@@ -238,6 +273,14 @@ async function handleSubmit() {
         @cancel="showDatePicker = false"
       />
     </van-popup>
+
+    <!-- 地区选择器 -->
+    <RegionPicker
+      v-model="form.regionIds"
+      :show="showRegionPicker"
+      @update:show="showRegionPicker = $event"
+      @confirm="onRegionConfirm"
+    />
 
     <div class="publish-tips">
       <p>发布须知：</p>

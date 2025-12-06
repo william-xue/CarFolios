@@ -1,8 +1,8 @@
-import { post, get } from './request'
 import type { UserInfo } from '@/types'
+import { get, post } from './request'
 
 interface LoginResponse {
-    token: string
+    access_token: string
     user: UserInfo
 }
 
@@ -13,7 +13,7 @@ export function sendVerifyCode(mobile: string): Promise<void> {
 
 // 登录
 export function login(mobile: string, code: string): Promise<LoginResponse> {
-    return post('/auth/login', { mobile, code })
+    return post('/auth/user/login', { mobile, code })
 }
 
 // 获取用户信息

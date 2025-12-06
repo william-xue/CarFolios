@@ -87,7 +87,9 @@
         "similar": "相似车源",
         "noResult": "未找到符合条件的车源",
         "offShelf": "下架",
-        "onShelf": "上架"
+        "onShelf": "上架",
+        "address": "详细地址",
+        "noMapData": "暂无地图数据"
     },
     "filter": {
         "title": "筛选条件",
@@ -217,13 +219,50 @@
     },
     "home": {
         "banner": {
-            "title": "二手车交易平台",
-            "subtitle": "专业、透明、放心的二手车交易服务"
+            "title": "中国二手车 · 全球出海",
+            "subtitle": "一站式跨境交易平台，让优质车源走向世界",
+            "cta": "立即选购"
+        },
+        "stats": {
+            "cars": "在售车源",
+            "countries": "覆盖国家",
+            "deals": "成功交易",
+            "partners": "合作伙伴"
+        },
+        "features": {
+            "title": "为什么选择我们",
+            "global": {
+                "title": "全球物流",
+                "desc": "覆盖非洲、中东、东南亚等50+国家，海运陆运一站直达"
+            },
+            "payment": {
+                "title": "跨境支付",
+                "desc": "支持PayPal、信用证、电汇等多种国际支付方式"
+            },
+            "inspection": {
+                "title": "专业检测",
+                "desc": "第三方权威检测，车况透明，VIN历史可查"
+            },
+            "service": {
+                "title": "售后保障",
+                "desc": "专属客服全程跟进，交易纠纷快速处理"
+            }
         },
         "searchPlaceholder": "搜索品牌、车系",
         "hotBrands": "热门品牌",
         "latestCars": "最新车源",
-        "viewMore": "查看更多"
+        "viewMore": "查看更多",
+        "trust": {
+            "title": "值得信赖",
+            "license": "商务部出口资质",
+            "secure": "资金安全保障",
+            "support": "7×24小时服务"
+        },
+        "tabs": {
+            "recommend": "精选推荐",
+            "latest": "最新上架",
+            "hot": "热门车型"
+        }
     },
     "404": {
         "title": "页面不存在",

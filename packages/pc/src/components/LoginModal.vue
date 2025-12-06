@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { useLocale } from '@/composables/useLocale'
 import { useUserStore } from '@/stores/user'
 import { ElMessage } from 'element-plus'
-import { useLocale } from '@/composables/useLocale'
+import { computed, ref } from 'vue'
 
 const { t } = useLocale()
 
@@ -17,8 +17,8 @@ const emit = defineEmits<{
 
 const userStore = useUserStore()
 
-const mobile = ref('')
-const code = ref('')
+const mobile = ref('13800138000')
+const code = ref('1234')
 const loading = ref(false)
 const countdown = ref(0)
 let timer: ReturnType<typeof setInterval> | null = null
@@ -28,7 +28,8 @@ const canSendCode = computed(() => {
 })
 
 const canSubmit = computed(() => {
-  return /^1\d{10}$/.test(mobile.value) && /^\d{6}$/.test(code.value)
+  // 开发环境支持 4-6 位验证码（兼容万能码 1234）
+  return /^1\d{10}$/.test(mobile.value) && /^\d{4,6}$/.test(code.value)
 })
 
 async function sendCode() {

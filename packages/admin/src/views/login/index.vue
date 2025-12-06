@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import { ref, reactive } from 'vue'
-import { useRouter } from 'vue-router'
 import { useUserStore } from '@/stores/user'
-import { ElMessage } from 'element-plus'
 import type { FormInstance, FormRules } from 'element-plus'
+import { ElMessage } from 'element-plus'
+import { reactive, ref } from 'vue'
+import { useRouter } from 'vue-router'
 
 const router = useRouter()
 const userStore = useUserStore()
@@ -43,7 +43,7 @@ async function handleLogin() {
     <div class="login-box">
       <div class="login-header">
         <img src="/vite.svg" alt="Logo" class="logo" />
-        <h1 class="title">车故二手车管理后台</h1>
+        <h1 class="title">爱车出海二手车管理后台</h1>
         <p class="subtitle">二手车交易平台管理系统</p>
       </div>
 

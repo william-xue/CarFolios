@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
+import { Timer, Location, Document } from '@element-plus/icons-vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useCarStore } from '@/stores/car'
 import { ElMessage, ElMessageBox } from 'element-plus'
@@ -55,7 +56,12 @@ function goToEdit() {
 }
 
 async function handleStatusChange(status: CarStatus) {
-  await carStore.updateCarStatus(carId.value, status)
+  if (status === 'on' || status === 'off') {
+    await carStore.toggleCarStatus(carId.value, status)
+  } else if (status === 'sold') {
+    // 标记已售需要调用专门的接口
+    await carStore.updateCar(carId.value, { status: 'sold' })
+  }
   ElMessage.success('状态更新成功')
   await carStore.fetchCarDetail(carId.value)
 }
@@ -82,6 +88,47 @@ function formatPrice(price?: number) {
 function formatDate(date?: string) {
   return date ? date.split('T')[0] : '-'
 }
+
+function formatDateTime(date?: string) {
+  if (!date) return '-'
+  const d = new Date(date)
+  return d.toLocaleString('zh-CN', { 
+    year: 'numeric', 
+    month: '2-digit', 
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit'
+  })
+}
+
+// 计算剩余天数
+function getRemainingDays(expiresAt?: string): number | null {
+  if (!expiresAt) return null
+  const now = new Date()
+  const expires = new Date(expiresAt)
+  const diff = expires.getTime() - now.getTime()
+  return Math.ceil(diff / (1000 * 60 * 60 * 24))
+}
+
+// 获取有效期状态
+const expiryStatus = computed(() => {
+  const car = carStore.currentCar
+  if (!car?.expiresAt) return null
+  const days = getRemainingDays(car.expiresAt)
+  if (days === null) return null
+  if (days <= 0) return { type: 'danger', text: '已过期' }
+  if (days <= 3) return { type: 'danger', text: `${days}天后过期` }
+  if (days <= 7) return { type: 'warning', text: `${days}天后过期` }
+  return { type: 'success', text: `剩余${days}天` }
+})
+
+// 完整地址
+const fullAddress = computed(() => {
+  const car = carStore.currentCar
+  if (!car) return '-'
+  const parts = [car.provinceName, car.cityName, car.districtName, car.address].filter(Boolean)
+  return parts.join(' ') || '-'
+})
 </script>
 
 <template>
@@ -210,15 +257,80 @@ function formatDate(date?: string) {
             </el-descriptions>
           </el-card>
 
+          <!-- VIN 和车牌信息 -->
+          <el-card class="info-card">
+            <template #header>
+              <div class="card-header">
+                <el-icon><Document /></el-icon>
+                <span>车辆识别信息</span>
+              </div>
+            </template>
+            <el-descriptions :column="1" border>
+              <el-descriptions-item label="VIN 车架号">
+                <span class="vin-code">{{ carStore.currentCar.vin || '-' }}</span>
+              </el-descriptions-item>
+              <el-descriptions-item label="车牌号">
+                {{ carStore.currentCar.plateNumber || '-' }}
+              </el-descriptions-item>
+              <el-descriptions-item label="发动机号">
+                {{ carStore.currentCar.engineNumber || '-' }}
+              </el-descriptions-item>
+            </el-descriptions>
+          </el-card>
+
           <!-- 位置信息 -->
           <el-card class="info-card">
-            <template #header>位置信息</template>
+            <template #header>
+              <div class="card-header">
+                <el-icon><Location /></el-icon>
+                <span>位置信息</span>
+              </div>
+            </template>
             <el-descriptions :column="1" border>
-              <el-descriptions-item label="所在城市">
-                {{ carStore.currentCar.cityName }}
+              <el-descriptions-item label="省份">
+                {{ carStore.currentCar.provinceName || '-' }}
               </el-descriptions-item>
-              <el-descriptions-item label="详细地址">
-                {{ carStore.currentCar.address || '-' }}
+              <el-descriptions-item label="城市">
+                {{ carStore.currentCar.cityName || '-' }}
+              </el-descriptions-item>
+              <el-descriptions-item label="区县">
+                {{ carStore.currentCar.districtName || '-' }}
+              </el-descriptions-item>
+              <el-descriptions-item label="完整地址">
+                {{ fullAddress }}
+              </el-descriptions-item>
+              <el-descriptions-item v-if="carStore.currentCar.lat && carStore.currentCar.lng" label="坐标">
+                {{ carStore.currentCar.lat }}, {{ carStore.currentCar.lng }}
+              </el-descriptions-item>
+            </el-descriptions>
+          </el-card>
+
+          <!-- 有效期信息 -->
+          <el-card class="info-card">
+            <template #header>
+              <div class="card-header">
+                <el-icon><Timer /></el-icon>
+                <span>有效期信息</span>
+                <el-tag v-if="expiryStatus" :type="expiryStatus.type" size="small" class="expiry-tag">
+                  {{ expiryStatus.text }}
+                </el-tag>
+              </div>
+            </template>
+            <el-descriptions :column="1" border>
+              <el-descriptions-item label="发布时间">
+                {{ formatDateTime(carStore.currentCar.publishedAt) }}
+              </el-descriptions-item>
+              <el-descriptions-item label="到期时间">
+                {{ formatDateTime(carStore.currentCar.expiresAt) }}
+              </el-descriptions-item>
+              <el-descriptions-item label="续期次数">
+                {{ carStore.currentCar.renewalCount || 0 }} 次
+              </el-descriptions-item>
+              <el-descriptions-item v-if="carStore.currentCar.renewedAt" label="最后续期">
+                {{ formatDateTime(carStore.currentCar.renewedAt) }}
+              </el-descriptions-item>
+              <el-descriptions-item v-if="carStore.currentCar.soldAt" label="售出时间">
+                {{ formatDateTime(carStore.currentCar.soldAt) }}
               </el-descriptions-item>
             </el-descriptions>
           </el-card>
@@ -328,5 +440,25 @@ function formatDate(date?: string) {
 .price-value {
   color: #f56c6c;
   font-weight: 600;
+}
+
+.card-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.card-header .el-icon {
+  color: #409eff;
+}
+
+.expiry-tag {
+  margin-left: auto;
+}
+
+.vin-code {
+  font-family: 'Courier New', monospace;
+  font-weight: 500;
+  letter-spacing: 1px;
 }
 </style>

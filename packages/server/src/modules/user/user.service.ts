@@ -8,7 +8,9 @@ export class UserService {
 
     // 获取用户列表 (管理端)
     async findAll(query: PaginationDto & { keyword?: string; authStatus?: string; status?: number }) {
-        const { page = 1, pageSize = 10, keyword, authStatus, status } = query
+        const page = Number(query.page) || 1
+        const pageSize = Number(query.pageSize) || 10
+        const { keyword, authStatus, status } = query
 
         const where: any = {}
         if (keyword) {
@@ -18,7 +20,7 @@ export class UserService {
             where.authStatus = authStatus
         }
         if (status !== undefined) {
-            where.status = status
+            where.status = Number(status)
         }
 
         const [list, total] = await Promise.all([

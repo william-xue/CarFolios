@@ -1,10 +1,10 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
 import { getDashboardStats } from '@/api'
 import { getPaymentStats, type PaymentStats } from '@/api/payment'
 import type { DashboardStats } from '@/types'
-import { Van, Document, User, ShoppingCart, Wallet } from '@element-plus/icons-vue'
+import { Document, ShoppingCart, User, Van, Wallet } from '@element-plus/icons-vue'
+import { onMounted, ref } from 'vue'
+import { useRouter } from 'vue-router'
 
 const router = useRouter()
 const loading = ref(true)
@@ -269,20 +269,19 @@ function formatAmount(amount: number) {
             订单管理
           </el-button>
         </el-col>
-        <el-col :span="4">
+        <!-- <el-col :span="4">
           <el-button size="large" class="action-btn" @click="goToPayments">
             <el-icon><Wallet /></el-icon>
             支付管理
           </el-button>
-        </el-col>
+        </el-col> -->
       </el-row>
     </el-card>
 
     <!-- 欢迎信息 -->
     <el-card class="welcome-card">
       <div class="welcome-content">
-        <h2>欢迎使用车故二手车管理后台</h2>
-        <p>这是一个 MVP 演示版本，您可以：</p>
+        <h2>欢迎使用爱车出海二手车管理后台</h2>
         <ul>
           <li>📝 发布和管理车源信息</li>
           <li>✅ 审核用户提交的车源</li>

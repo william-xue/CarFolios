@@ -87,7 +87,9 @@
         "similar": "Similar Cars",
         "noResult": "No cars found",
         "offShelf": "Off Shelf",
-        "onShelf": "On Shelf"
+        "onShelf": "On Shelf",
+        "address": "Address",
+        "noMapData": "No map data available"
     },
     "filter": {
         "title": "Filters",
@@ -217,13 +219,50 @@
     },
     "home": {
         "banner": {
-            "title": "Used Car Trading Platform",
-            "subtitle": "Professional, transparent, and reliable used car trading service"
+            "title": "China Used Cars · Going Global",
+            "subtitle": "One-stop cross-border trading platform, bringing quality vehicles worldwide",
+            "cta": "Browse Now"
+        },
+        "stats": {
+            "cars": "Cars Available",
+            "countries": "Countries Covered",
+            "deals": "Successful Deals",
+            "partners": "Partners"
+        },
+        "features": {
+            "title": "Why Choose Us",
+            "global": {
+                "title": "Global Logistics",
+                "desc": "Covering 50+ countries in Africa, Middle East, Southeast Asia with direct shipping"
+            },
+            "payment": {
+                "title": "Cross-border Payment",
+                "desc": "Supporting PayPal, L/C, T/T and various international payment methods"
+            },
+            "inspection": {
+                "title": "Professional Inspection",
+                "desc": "Third-party certified inspection, transparent condition, VIN history available"
+            },
+            "service": {
+                "title": "After-sales Support",
+                "desc": "Dedicated customer service, quick dispute resolution"
+            }
         },
         "searchPlaceholder": "Search brand, series",
         "hotBrands": "Hot Brands",
         "latestCars": "Latest Cars",
-        "viewMore": "View More"
+        "viewMore": "View More",
+        "trust": {
+            "title": "Trusted Platform",
+            "license": "Export License Certified",
+            "secure": "Secure Payment",
+            "support": "24/7 Support"
+        },
+        "tabs": {
+            "recommend": "Featured",
+            "latest": "New Arrivals",
+            "hot": "Popular"
+        }
     },
     "404": {
         "title": "Page Not Found",

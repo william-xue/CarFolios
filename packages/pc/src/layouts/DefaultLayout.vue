@@ -1,12 +1,12 @@
 <script setup lang="ts">
+import LanguageSwitcher from '@/components/LanguageSwitcher.vue'
+import LoginModal from '@/components/LoginModal.vue'
+import { useLocale } from '@/composables/useLocale'
+import { useUserStore } from '@/stores/user'
+import { Search } from '@element-plus/icons-vue'
+import { ElMessage, ElMessageBox } from 'element-plus'
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
-import { useUserStore } from '@/stores/user'
-import { ElMessage, ElMessageBox } from 'element-plus'
-import { Search } from '@element-plus/icons-vue'
-import LoginModal from '@/components/LoginModal.vue'
-import LanguageSwitcher from '@/components/LanguageSwitcher.vue'
-import { useLocale } from '@/composables/useLocale'
 
 const router = useRouter()
 const userStore = useUserStore()
@@ -65,7 +65,7 @@ function onLoginSuccess() {
       <div class="header-content">
         <div class="header-left">
           <router-link to="/" class="logo">
-            <span class="logo-text">CarFolios</span>
+            <span class="logo-text">爱车出海</span>
           </router-link>
           <div class="search-box">
             <el-input
@@ -129,7 +129,7 @@ function onLoginSuccess() {
     <!-- 底部 -->
     <footer class="footer">
       <div class="footer-content">
-        <p>© 2025 CarFolios 二手车信息发布平台</p>
+        <p>© 2025 爱车出海 二手车跨境交易平台</p>
       </div>
     </footer>
 

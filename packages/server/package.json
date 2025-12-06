@@ -1,7 +1,7 @@
 {
     "name": "car-trading-server",
     "version": "1.0.0",
-    "description": "车故二手车交易平台后端服务",
+    "description": "爱车出海二手车交易平台后端服务",
     "main": "dist/main.js",
     "scripts": {
         "build": "nest build",

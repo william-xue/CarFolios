@@ -10,6 +10,9 @@ export interface CarListParams {
     minPrice?: number
     maxPrice?: number
     status?: string
+    provinceId?: number
+    cityId?: number
+    districtId?: number
 }
 
 // 获取上架车源列表（首页/搜索）
@@ -45,6 +48,16 @@ export function toggleCarStatus(id: number, status: 'on' | 'off') {
 // 删除车源
 export function deleteCar(id: number) {
     return request.delete(`/cars/${id}`)
+}
+
+// 续期车源
+export function renewCar(id: number) {
+    return request.post(`/cars/${id}/renew`)
+}
+
+// 标记已售
+export function markAsSold(id: number) {
+    return request.post(`/cars/${id}/sold`)
 }
 
 // 获取所有品牌

@@ -26,6 +26,7 @@ const statusOptions = [
   { label: '已上架', value: 'on' },
   { label: '已下架', value: 'off' },
   { label: '待审核', value: 'pending' },
+  { label: '已过期', value: 'expired' },
   { label: '已售出', value: 'sold' },
   { label: '已拒绝', value: 'rejected' },
 ]
@@ -41,6 +42,7 @@ const statusTagType: Record<string, string> = {
   on: 'success',
   off: 'info',
   pending: 'warning',
+  expired: 'danger',
   sold: '',
   rejected: 'danger',
   draft: 'info',
@@ -51,10 +53,27 @@ const statusText: Record<string, string> = {
   on: '已上架',
   off: '已下架',
   pending: '待审核',
+  expired: '已过期',
   sold: '已售出',
   rejected: '已拒绝',
   draft: '草稿',
   approved: '已通过',
+}
+
+// 计算剩余天数
+function getRemainingDays(expireDate: string | undefined): number {
+  if (!expireDate) return 0
+  const expire = new Date(expireDate)
+  const now = new Date()
+  const diffDays = Math.ceil((expire.getTime() - now.getTime()) / (1000 * 60 * 60 * 24))
+  return Math.max(0, diffDays)
+}
+
+// 判断是否即将过期（7天内）
+function isExpiringSoon(expireDate: string | undefined): boolean {
+  if (!expireDate) return false
+  const days = getRemainingDays(expireDate)
+  return days > 0 && days <= 7
 }
 
 onMounted(async () => {
@@ -230,11 +249,16 @@ function formatDate(date: string) {
             <el-tag v-else type="warning" size="small">车商</el-tag>
           </template>
         </el-table-column>
-        <el-table-column label="状态" width="100">
+        <el-table-column label="状态" width="140">
           <template #default="{ row }">
-            <el-tag :type="statusTagType[row.status]" size="small">
-              {{ statusText[row.status] }}
-            </el-tag>
+            <div class="status-tags">
+              <el-tag :type="statusTagType[row.status]" size="small">
+                {{ statusText[row.status] }}
+              </el-tag>
+              <el-tag v-if="isExpiringSoon(row.expiresAt)" type="warning" size="small">
+                {{ getRemainingDays(row.expiresAt) }}天后过期
+              </el-tag>
+            </div>
           </template>
         </el-table-column>
         <el-table-column label="发布时间" width="120">
@@ -360,5 +384,11 @@ function formatDate(date: string) {
 
 .action-buttons .el-button {
   padding: 4px 8px;
+}
+
+.status-tags {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
 }
 </style>

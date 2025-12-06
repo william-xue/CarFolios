@@ -1,4 +1,4 @@
-import type { Brand, City, CarListItem, CarDetail, UserInfo } from '@/types'
+import type { Brand, CarDetail, CarListItem, City, UserInfo } from '@/types';
 
 // 品牌数据
 export const brands: Brand[] = [
@@ -203,7 +203,7 @@ export const carDetails: Record<number, CarDetail> = {
 export const defaultUser: UserInfo = {
     id: 1,
     mobile: '138****1234',
-    nickname: '车故用户',
+    nickname: '爱车出海用户',
     avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=user1',
     authStatus: 'unverified',
     balance: 0,

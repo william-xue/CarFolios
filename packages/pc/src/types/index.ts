@@ -84,6 +84,8 @@ export interface CarDetail {
     districtCode?: string
     districtName?: string
     address?: string
+    lat?: number
+    lng?: number
     price: number
     originalPrice?: number
     vin?: string

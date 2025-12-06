@@ -1,6 +1,6 @@
-import { createRouter, createWebHistory } from 'vue-router'
-import type { RouteRecordRaw } from 'vue-router'
 import { useUserStore } from '@/stores/user'
+import type { RouteRecordRaw } from 'vue-router'
+import { createRouter, createWebHistory } from 'vue-router'
 
 const routes: RouteRecordRaw[] = [
     {
@@ -51,6 +51,18 @@ const routes: RouteRecordRaw[] = [
                 meta: { title: '审核中心', icon: 'Checked' },
             },
             {
+                path: 'expired-cars',
+                name: 'ExpiredCars',
+                component: () => import('@/views/car/expired.vue'),
+                meta: { title: '过期车辆', icon: 'Timer' },
+            },
+            {
+                path: 'archived-cars',
+                name: 'ArchivedCars',
+                component: () => import('@/views/car/archived.vue'),
+                meta: { title: '归档车辆', icon: 'FolderOpened' },
+            },
+            {
                 path: 'users',
                 name: 'Users',
                 component: () => import('@/views/user/list.vue'),
@@ -80,7 +92,7 @@ const router = createRouter({
 // 路由守卫
 router.beforeEach((to, _from, next) => {
     // 设置页面标题
-    document.title = `${to.meta.title || '车故'} - 车故二手车管理后台`
+    document.title = `${to.meta.title || '爱车出海'} - 爱车出海二手车管理后台`
 
     const userStore = useUserStore()
 

@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import { ref } from 'vue'
-import { useRouter } from 'vue-router'
 import { useUserStore } from '@/stores/user'
 import { showToast } from 'vant'
+import { ref } from 'vue'
+import { useRouter } from 'vue-router'
 
 const router = useRouter()
 const userStore = useUserStore()
@@ -65,7 +65,7 @@ function goBack() {
     <van-nav-bar title="登录" left-arrow @click-left="goBack" />
 
     <div class="login-header">
-      <h2>欢迎来到车故</h2>
+      <h2>欢迎来到爱车出海</h2>
       <p>登录后享受更多服务</p>
     </div>
 

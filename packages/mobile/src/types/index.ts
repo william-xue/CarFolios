@@ -3,7 +3,7 @@ export type SourceType = 'personal' | 'dealer' | 'platform'
 export type GearboxType = 'MT' | 'AT' | 'DCT' | 'CVT'
 export type EmissionStandard = '国三' | '国四' | '国五' | '国六'
 export type UseType = 'family' | 'business' | 'official'
-export type CarStatus = 'draft' | 'pending' | 'approved' | 'on' | 'off' | 'sold' | 'rejected'
+export type CarStatus = 'draft' | 'pending' | 'approved' | 'on' | 'off' | 'sold' | 'expired' | 'rejected'
 
 export interface Brand {
     id: number
@@ -35,6 +35,9 @@ export interface CarListItem {
     sourceType: SourceType
     gearbox?: GearboxType
     tags?: string[]
+    status?: CarStatus
+    expireDate?: string
+    remainingDays?: number
 }
 
 export interface CarDetail {

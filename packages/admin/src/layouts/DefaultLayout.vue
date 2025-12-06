@@ -1,18 +1,21 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue'
-import { useRouter, useRoute } from 'vue-router'
 import { useUserStore } from '@/stores/user'
 import {
-  Odometer,
-  Van,
-  Checked,
-  Expand,
-  Fold,
-  User,
-  SwitchButton,
-  List,
+    Checked,
+    Expand,
+    Fold,
+    FolderOpened,
+    List,
+    Odometer,
+    SwitchButton,
+    Timer,
+    User,
+    Van,
+    Wallet,
 } from '@element-plus/icons-vue'
 import { ElMessageBox } from 'element-plus'
+import { computed, ref } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 
 const router = useRouter()
 const route = useRoute()
@@ -24,8 +27,11 @@ const menuItems = [
   { path: '/dashboard', title: '工作台', icon: Odometer },
   { path: '/cars', title: '车源管理', icon: Van },
   { path: '/audit', title: '审核中心', icon: Checked },
+  { path: '/expired-cars', title: '过期车辆', icon: Timer },
+  { path: '/archived-cars', title: '归档车辆', icon: FolderOpened },
   { path: '/users', title: '用户管理', icon: User },
   { path: '/orders', title: '订单管理', icon: List },
+  { path: '/payments', title: '支付管理', icon: Wallet },
 ]
 
 const activeMenu = computed(() => {
@@ -60,7 +66,7 @@ async function handleLogout() {
     <el-aside :width="isCollapse ? '64px' : '220px'" class="layout-aside">
       <div class="logo">
         <img src="/vite.svg" alt="Logo" class="logo-img" />
-        <span v-show="!isCollapse" class="logo-text">车故管理后台</span>
+        <span v-show="!isCollapse" class="logo-text">爱车出海管理后台</span>
       </div>
       <el-menu
         :default-active="activeMenu"

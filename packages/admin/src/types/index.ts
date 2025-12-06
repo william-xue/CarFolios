@@ -105,9 +105,27 @@ export interface Car {
     emissionStandard: EmissionStandard
     useType: UseType
     transferCount: number
+    // 位置信息
+    provinceId?: number
+    provinceName?: string
     cityCode: string
     cityName: string
+    districtId?: number
+    districtName?: string
     address: string
+    lat?: number
+    lng?: number
+    // VIN 和车牌
+    vin?: string
+    plateNumber?: string
+    engineNumber?: string
+    // 有效期信息
+    publishedAt?: string
+    expiresAt?: string
+    renewedAt?: string
+    renewalCount?: number
+    soldAt?: string
+    // 价格和其他
     price: number
     originalPrice?: number
     status: CarStatus

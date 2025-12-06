@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted, computed, onUnmounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useCarStore } from '@/stores/car'
 import { useUserStore } from '@/stores/user'
@@ -9,6 +9,7 @@ import ImageGallery from '@/components/ImageGallery.vue'
 import LoginModal from '@/components/LoginModal.vue'
 import { formatGearbox, formatFuelType, formatDate } from '@/utils'
 import { useLocale } from '@/composables/useLocale'
+import { Location } from '@element-plus/icons-vue'
 
 const { t, formatPrice, formatMileage } = useLocale()
 const route = useRoute()
@@ -20,9 +21,37 @@ const orderStore = useOrderStore()
 const loading = ref(false)
 const showLoginModal = ref(false)
 const bookingLoading = ref(false)
+const mapContainer = ref<HTMLElement | null>(null)
+const mapInstance = ref<any>(null)
 
 const carId = computed(() => Number(route.params.id))
 const car = computed(() => carStore.currentCar)
+
+// 完整地址信息
+const fullAddress = computed(() => {
+    if (!car.value) return ''
+    const parts = [
+        car.value.provinceName,
+        car.value.cityName,
+        car.value.districtName,
+        car.value.address
+    ].filter(Boolean)
+    return parts.join(' ')
+})
+
+// 简短位置（城市 · 区县）
+const shortLocation = computed(() => {
+    if (!car.value) return '-'
+    const city = car.value.cityName || ''
+    const district = car.value.districtName || ''
+    if (city && district) return `${city} · ${district}`
+    return city || district || '-'
+})
+
+// 是否有坐标信息
+const hasCoordinates = computed(() => {
+    return car.value?.lat && car.value?.lng
+})
 
 // 车辆图片列表
 const images = computed(() => {
@@ -39,17 +68,76 @@ const carParams = computed(() => {
         { label: t('car.gearbox'), value: formatGearbox(car.value.gearbox || '') },
         { label: t('car.fuelType'), value: formatFuelType(car.value.fuelType || '') },
         { label: t('car.displacement'), value: car.value.displacement ? `${car.value.displacement}L` : '-' },
-        { label: t('car.location'), value: `${car.value.provinceName || ''} ${car.value.cityName || ''}` },
-        { label: t('car.vin'), value: car.value.vin || '-' },
+        { label: t('car.location'), value: shortLocation.value },
+        { label: t('car.vin'), value: car.value.vin ? maskVin(car.value.vin) : '-' },
         { label: t('common.time'), value: formatDate(car.value.createdAt || '', 'date') },
     ]
 })
+
+// VIN 脱敏显示（只显示前6位和后4位）
+function maskVin(vin: string): string {
+    if (vin.length <= 10) return vin
+    return `${vin.slice(0, 6)}*****${vin.slice(-4)}`
+}
+
+// 初始化地图
+function initMap() {
+    if (!mapContainer.value || !hasCoordinates.value || !car.value) return
+    
+    // 检查是否已加载高德地图 API
+    if (typeof window.AMap === 'undefined') {
+        console.warn('高德地图 API 未加载')
+        return
+    }
+    
+    try {
+        const lat = car.value.lat!
+        const lng = car.value.lng!
+        
+        mapInstance.value = new window.AMap.Map(mapContainer.value, {
+            zoom: 14,
+            center: [lng, lat],
+            viewMode: '2D'
+        })
+        
+        // 添加标记点
+        const marker = new window.AMap.Marker({
+            position: [lng, lat],
+            title: car.value.title
+        })
+        mapInstance.value.add(marker)
+        
+        // 添加信息窗体
+        const infoWindow = new window.AMap.InfoWindow({
+            content: `<div style="padding: 8px; font-size: 14px;">${shortLocation.value}</div>`,
+            offset: new window.AMap.Pixel(0, -30)
+        })
+        
+        marker.on('click', () => {
+            infoWindow.open(mapInstance.value, marker.getPosition())
+        })
+    } catch (error) {
+        console.error('地图初始化失败:', error)
+    }
+}
+
+// 销毁地图
+function destroyMap() {
+    if (mapInstance.value) {
+        mapInstance.value.destroy()
+        mapInstance.value = null
+    }
+}
 
 // 加载车辆详情
 async function loadCarDetail() {
     loading.value = true
     try {
         await carStore.fetchCarDetail(carId.value)
+        // 延迟初始化地图，确保 DOM 已渲染
+        setTimeout(() => {
+            initMap()
+        }, 100)
     } catch (error) {
         ElMessage.error(t('message.operationFailed'))
         router.push('/')
@@ -109,6 +197,10 @@ function onLoginSuccess() {
 
 onMounted(() => {
     loadCarDetail()
+})
+
+onUnmounted(() => {
+    destroyMap()
 })
 </script>
 
@@ -193,6 +285,34 @@ onMounted(() => {
             <div v-if="car.description" class="desc-section card">
                 <h2 class="section-title">{{ t('car.description') }}</h2>
                 <div class="desc-content">{{ car.description }}</div>
+            </div>
+
+            <!-- 位置信息 -->
+            <div class="location-section card">
+                <h2 class="section-title">
+                    <el-icon><Location /></el-icon>
+                    {{ t('car.location') }}
+                </h2>
+                <div class="location-content">
+                    <div class="location-info">
+                        <div class="location-row">
+                            <span class="location-label">{{ t('car.location') }}：</span>
+                            <span class="location-value">{{ shortLocation }}</span>
+                        </div>
+                        <div v-if="fullAddress" class="location-row">
+                            <span class="location-label">{{ t('car.address') || '详细地址' }}：</span>
+                            <span class="location-value">{{ fullAddress }}</span>
+                        </div>
+                    </div>
+                    <!-- 地图展示 -->
+                    <div v-if="hasCoordinates" class="map-wrapper">
+                        <div ref="mapContainer" class="map-container"></div>
+                    </div>
+                    <div v-else class="map-placeholder">
+                        <el-icon :size="48" color="#c0c4cc"><Location /></el-icon>
+                        <p>{{ t('car.noMapData') || '暂无地图数据' }}</p>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -352,5 +472,78 @@ onMounted(() => {
     line-height: 1.8;
     color: $text-regular;
     white-space: pre-wrap;
+}
+
+.location-section {
+    padding: 20px;
+    margin-bottom: 24px;
+}
+
+.section-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    
+    .el-icon {
+        color: $primary-color;
+    }
+}
+
+.location-content {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.location-info {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.location-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+}
+
+.location-label {
+    font-size: 14px;
+    color: $text-secondary;
+    flex-shrink: 0;
+    min-width: 80px;
+}
+
+.location-value {
+    font-size: 14px;
+    color: $text-primary;
+    line-height: 1.5;
+}
+
+.map-wrapper {
+    border-radius: $border-radius-md;
+    overflow: hidden;
+    border: 1px solid $border-color-lighter;
+}
+
+.map-container {
+    width: 100%;
+    height: 300px;
+}
+
+.map-placeholder {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 200px;
+    background: $bg-color-page;
+    border-radius: $border-radius-md;
+    color: $text-secondary;
+    
+    p {
+        margin-top: 12px;
+        font-size: 14px;
+    }
 }
 </style>

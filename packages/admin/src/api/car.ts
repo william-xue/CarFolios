@@ -60,3 +60,23 @@ export function getBrands(): Promise<Brand[]> {
 export function getSeries(brandId: number) {
     return request.get(`/brands/${brandId}/series`)
 }
+
+// 续期车源
+export function renewCar(id: number) {
+    return request.post(`/cars/${id}/renew`)
+}
+
+// 获取归档车辆列表
+export function getArchivedCars(params: { page?: number; pageSize?: number }): Promise<PageResult<any>> {
+    return request.get('/cars/archived', { params })
+}
+
+// 恢复归档车辆
+export function restoreArchivedCar(id: number) {
+    return request.post(`/cars/archived/${id}/restore`)
+}
+
+// 永久删除归档车辆
+export function deleteArchivedCar(id: number) {
+    return request.delete(`/cars/archived/${id}`)
+}

@@ -183,7 +183,7 @@
 <script setup lang="ts">
 import { ref, reactive, onMounted, computed } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { getPaymentList, getPaymentDetail, refundPayment, type PaymentItem, type PaymentQueryParams } from '@/api/payment'
+import { getPaymentList, getPaymentDetail, refundPayment, type PaymentItem, type PaymentQueryParams, type PaymentLog } from '@/api/payment'
 
 // 状态映射
 const statusMap: Record<string, string> = {
@@ -232,7 +232,7 @@ const queryParams = reactive<PaymentQueryParams>({
 
 // 详情弹窗
 const detailVisible = ref(false)
-const currentPayment = ref<PaymentItem | null>(null)
+const currentPayment = ref<(PaymentItem & { logs?: PaymentLog[] }) | null>(null)
 
 // 退款弹窗
 const refundVisible = ref(false)
@@ -257,8 +257,9 @@ const fetchList = async () => {
   loading.value = true
   try {
     const res = await getPaymentList(queryParams)
-    paymentList.value = res.data.list
-    total.value = res.data.total
+    // request 拦截器已经返回 response.data，所以直接使用 res
+    paymentList.value = res.list || []
+    total.value = res.total || 0
   } catch (error) {
     ElMessage.error('获取支付列表失败')
   } finally {
@@ -300,7 +301,7 @@ const handleDateChange = (val: string[] | null) => {
 const showDetail = async (row: PaymentItem) => {
   try {
     const res = await getPaymentDetail(row.id)
-    currentPayment.value = res.data
+    currentPayment.value = res as any
     detailVisible.value = true
   } catch (error) {
     ElMessage.error('获取详情失败')

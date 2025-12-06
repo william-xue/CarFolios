@@ -41,7 +41,9 @@ export class OrderService {
 
     // 获取订单列表
     async findAll(query: { page?: number; pageSize?: number; status?: string; keyword?: string }) {
-        const { page = 1, pageSize = 10, status, keyword } = query
+        const page = Number(query.page) || 1
+        const pageSize = Number(query.pageSize) || 10
+        const { status, keyword } = query
 
         const where: any = {}
         if (status) {
@@ -70,7 +72,9 @@ export class OrderService {
 
     // 获取用户订单
     async findByUser(userId: number, type: 'buy' | 'sell', query: { page?: number; pageSize?: number; status?: string }) {
-        const { page = 1, pageSize = 10, status } = query
+        const page = Number(query.page) || 1
+        const pageSize = Number(query.pageSize) || 10
+        const { status } = query
 
         const where: any = type === 'buy' ? { buyerId: userId } : { sellerId: userId }
         if (status) {

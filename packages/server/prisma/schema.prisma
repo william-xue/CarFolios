@@ -1,4 +1,4 @@
-// Prisma Schema - 车故二手车交易平台
+// Prisma Schema - 爱车出海二手车交易平台
 
 generator client {
   provider = "prisma-client-js"
@@ -37,10 +37,11 @@ model User {
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
 
-  cars       Car[]
-  buyOrders  Order[]   @relation("BuyerOrders")
-  sellOrders Order[]   @relation("SellerOrders")
-  payments   Payment[]
+  cars          Car[]
+  buyOrders     Order[]        @relation("BuyerOrders")
+  sellOrders    Order[]        @relation("SellerOrders")
+  payments      Payment[]
+  notifications Notification[]
 }
 
 // 品牌
@@ -68,40 +69,71 @@ model Series {
 
 // 车源
 model Car {
-  id               Int      @id @default(autoincrement())
+  id               Int       @id @default(autoincrement())
   title            String
   ownerId          Int
-  sourceType       String   @default("personal") // personal, dealer, platform
+  sourceType       String    @default("personal") // personal, dealer, platform
   brandId          Int
   seriesId         Int
-  firstRegDate     String   // 首次上牌日期
-  mileage          Float    // 里程(万公里)
-  displacement     Float?   // 排量
-  gearbox          String?  // MT, AT, DCT, CVT
-  emissionStandard String?  // 国三, 国四, 国五, 国六
-  useType          String?  // family, business, official
-  transferCount    Int      @default(0) // 过户次数
-  cityCode         String?
-  cityName         String?
-  address          String?
-  price            Float    // 售价(万)
-  originalPrice    Float?   // 新车指导价
-  status           String   @default("pending") // draft, pending, approved, on, off, sold, rejected
+  firstRegDate     String    // 首次上牌日期
+  mileage          Float     // 里程(万公里)
+  displacement     Float?    // 排量
+  gearbox          String?   // MT, AT, DCT, CVT
+  emissionStandard String?   // 国三, 国四, 国五, 国六
+  useType          String?   // family, business, official
+  transferCount    Int       @default(0) // 过户次数
+  
+  // 地理位置字段
+  provinceId       Int?                              // 省份ID
+  provinceName     String?                           // 省份名称
+  cityId           Int?                              // 城市ID（关联Region）
+  cityCode         String?                           // 城市代码
+  cityName         String?                           // 城市名称
+  districtId       Int?                              // 区县ID
+  districtName     String?                           // 区县名称
+  address          String?                           // 详细地址
+  lat              Float?                            // 纬度
+  lng              Float?                            // 经度
+  
+  // VIN和车牌信息
+  vin              String?   @unique                 // 车架号（17位，全球唯一）
+  plateNumber      String?                           // 车牌号
+  engineNumber     String?                           // 发动机号
+  
+  price            Float     // 售价(万)
+  originalPrice    Float?    // 新车指导价
+  status           String    @default("pending") // draft, pending, approved, on, off, sold, expired, rejected
   coverImage       String?
-  images           String?  // JSON数组
+  images           String?   // JSON数组
   video            String?
-  highlightDesc    String?  // 车辆亮点
+  highlightDesc    String?   // 车辆亮点
   color            String?
-  plateCity        String?  // 牌照城市
-  configs          String?  // JSON数组 - 配置
-  rejectReason     String?  // 驳回原因
-  createdAt        DateTime @default(now())
-  updatedAt        DateTime @updatedAt
+  plateCity        String?   // 牌照城市
+  configs          String?   // JSON数组 - 配置
+  rejectReason     String?   // 驳回原因
+  
+  // 有效期管理字段
+  publishedAt      DateTime?                         // 发布时间
+  expiresAt        DateTime?                         // 过期时间
+  renewedAt        DateTime?                         // 最后续期时间
+  renewalCount     Int       @default(0)             // 续期次数
+  soldAt           DateTime?                         // 售出时间
+  
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
 
   owner  User     @relation(fields: [ownerId], references: [id])
   brand  Brand    @relation(fields: [brandId], references: [id])
   series Series   @relation(fields: [seriesId], references: [id])
   orders Order[]
+
+  @@index([provinceId])
+  @@index([cityId])
+  @@index([districtId])
+  @@index([vin])
+  @@index([plateNumber])
+  @@index([expiresAt])
+  @@index([status, expiresAt])
 }
 
 // 订单
@@ -180,4 +212,92 @@ model PaymentLog {
   createdAt    DateTime @default(now())
 
   payment Payment @relation(fields: [paymentId], references: [id])
+}
+
+// ============================================
+// 行政区划表 - 省市区三级
+// ============================================
+model Region {
+  id        Int      @id @default(autoincrement())
+  name      String                                    // 区域名称
+  parentId  Int?                                      // 父级ID
+  level     Int                                       // 层级: 1=省, 2=市, 3=区县
+  pinyin    String?                                   // 拼音（用于搜索）
+  lat       Float?                                    // 纬度
+  lng       Float?                                    // 经度
+  status    Int      @default(1)                      // 状态: 0-禁用 1-启用
+  createdAt DateTime @default(now())
+
+  parent    Region?  @relation("RegionHierarchy", fields: [parentId], references: [id])
+  children  Region[] @relation("RegionHierarchy")
+
+  // 车辆关联
+  provinceCars Region_Car_Province[]
+  cityCars     Region_Car_City[]
+  districtCars Region_Car_District[]
+
+  @@index([parentId])
+  @@index([level])
+  @@index([pinyin])
+}
+
+// 车辆-省份关联（用于解决 SQLite 多关联限制）
+model Region_Car_Province {
+  id       Int    @id @default(autoincrement())
+  regionId Int
+  carId    Int
+  region   Region @relation(fields: [regionId], references: [id])
+
+  @@unique([regionId, carId])
+}
+
+model Region_Car_City {
+  id       Int    @id @default(autoincrement())
+  regionId Int
+  carId    Int
+  region   Region @relation(fields: [regionId], references: [id])
+
+  @@unique([regionId, carId])
+}
+
+model Region_Car_District {
+  id       Int    @id @default(autoincrement())
+  regionId Int
+  carId    Int
+  region   Region @relation(fields: [regionId], references: [id])
+
+  @@unique([regionId, carId])
+}
+
+// ============================================
+// 归档车辆表 - 存储过期超过30天的车辆
+// ============================================
+model ArchivedCar {
+  id         Int      @id @default(autoincrement())
+  originalId Int      @unique                         // 原车辆ID
+  data       String                                   // JSON存储完整车辆数据
+  archivedAt DateTime @default(now())                 // 归档时间
+  archivedBy String   @default("system")              // 归档操作者
+
+  @@index([originalId])
+  @@index([archivedAt])
+}
+
+// ============================================
+// 通知表 - 用户消息通知
+// ============================================
+model Notification {
+  id        Int      @id @default(autoincrement())
+  userId    Int                                       // 用户ID
+  type      String                                    // 类型: expiry_reminder, system, order, etc.
+  title     String                                    // 标题
+  content   String                                    // 内容
+  data      String?                                   // JSON额外数据
+  isRead    Boolean  @default(false)                  // 是否已读
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@index([userId, isRead])
+  @@index([createdAt])
 }

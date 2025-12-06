@@ -35,6 +35,7 @@ export interface PaymentItem {
         nickname: string
         mobile: string
     }
+    logs?: PaymentLog[]
 }
 
 // 支付日志
@@ -94,27 +95,27 @@ export interface PaymentStats {
 /**
  * 获取支付订单列表
  */
-export function getPaymentList(params: PaymentQueryParams) {
-    return request.get<PaymentListResult>('/payments', { params })
+export function getPaymentList(params: PaymentQueryParams): Promise<PaymentListResult> {
+    return request.get('/payments', { params })
 }
 
 /**
  * 获取支付订单详情
  */
-export function getPaymentDetail(id: number) {
-    return request.get<PaymentItem & { logs: PaymentLog[] }>(`/payments/${id}`)
+export function getPaymentDetail(id: number): Promise<PaymentItem & { logs: PaymentLog[] }> {
+    return request.get(`/payments/${id}`)
 }
 
 /**
  * 发起退款
  */
-export function refundPayment(id: number, params: RefundParams) {
+export function refundPayment(id: number, params: RefundParams): Promise<any> {
     return request.post(`/payments/${id}/refund`, params)
 }
 
 /**
  * 获取支付统计
  */
-export function getPaymentStats() {
-    return request.get<PaymentStats>('/stats/payment')
+export function getPaymentStats(): Promise<PaymentStats> {
+    return request.get('/stats/payment')
 }

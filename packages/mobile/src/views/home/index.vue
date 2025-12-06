@@ -1,7 +1,8 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useCarStore } from '@/stores/car'
+import LocationFilter from '@/components/LocationFilter.vue'
 
 const router = useRouter()
 const carStore = useCarStore()
@@ -12,13 +13,33 @@ const pageSize = 10
 const finished = ref(false)
 const refreshing = ref(false)
 
+// 位置筛选
+const showLocationFilter = ref(false)
+const selectedProvinceId = ref<number | undefined>()
+const selectedCityId = ref<number | undefined>()
+const selectedProvinceName = ref<string | undefined>()
+const selectedCityName = ref<string | undefined>()
+
+// 当前位置显示文本
+const locationText = computed(() => {
+  if (selectedCityName.value) return selectedCityName.value
+  if (selectedProvinceName.value) return selectedProvinceName.value
+  return '全国'
+})
+
 onMounted(() => {
   loadData()
   carStore.fetchBrands()
 })
 
 async function loadData() {
-  const res = await carStore.fetchCars({ page: page.value, pageSize, keyword: keyword.value })
+  const res = await carStore.fetchCars({ 
+    page: page.value, 
+    pageSize, 
+    keyword: keyword.value,
+    provinceId: selectedProvinceId.value,
+    cityId: selectedCityId.value
+  })
   if (res.list.length < pageSize) {
     finished.value = true
   }
@@ -48,19 +69,50 @@ function formatGearbox(type: string) {
   const map: Record<string, string> = { MT: '手动', AT: '自动', DCT: '双离合', CVT: 'CVT' }
   return map[type] || type
 }
+
+// 位置筛选确认
+function handleLocationConfirm(data: { 
+  provinceId?: number
+  provinceName?: string
+  cityId?: number
+  cityName?: string 
+}) {
+  selectedProvinceId.value = data.provinceId
+  selectedProvinceName.value = data.provinceName
+  selectedCityId.value = data.cityId
+  selectedCityName.value = data.cityName
+  
+  // 重新加载数据
+  page.value = 1
+  finished.value = false
+  carStore.cars = []
+  loadData()
+}
+
+// 打开位置筛选
+function openLocationFilter() {
+  showLocationFilter.value = true
+}
 </script>
 
 <template>
   <div class="home-page">
-    <!-- 搜索栏 -->
-    <div class="search-bar">
-      <van-search
-        v-model="keyword"
-        placeholder="搜索车型、品牌"
-        shape="round"
-        readonly
-        @click="goToSearch"
-      />
+    <!-- 顶部栏：位置 + 搜索 -->
+    <div class="top-bar">
+      <div class="location-entry" @click="openLocationFilter">
+        <van-icon name="location-o" />
+        <span class="location-text">{{ locationText }}</span>
+        <van-icon name="arrow-down" size="12" />
+      </div>
+      <div class="search-bar">
+        <van-search
+          v-model="keyword"
+          placeholder="搜索车型、品牌"
+          shape="round"
+          readonly
+          @click="goToSearch"
+        />
+      </div>
     </div>
 
     <!-- 品牌快捷入口 -->
@@ -100,7 +152,7 @@ function formatGearbox(type: string) {
               <div class="car-tags">
                 <van-tag plain type="primary">{{ car.firstRegDate }}</van-tag>
                 <van-tag plain>{{ car.mileage }}万公里</van-tag>
-                <van-tag plain>{{ formatGearbox(car.gearbox) }}</van-tag>
+                <van-tag plain>{{ formatGearbox(car.gearbox || '') }}</van-tag>
               </div>
               <div class="car-bottom">
                 <span class="car-price">{{ car.price }}<small>万</small></span>
@@ -111,6 +163,14 @@ function formatGearbox(type: string) {
         </van-list>
       </van-pull-refresh>
     </div>
+    
+    <!-- 位置筛选弹窗 -->
+    <LocationFilter
+      v-model:visible="showLocationFilter"
+      :province-id="selectedProvinceId"
+      :city-id="selectedCityId"
+      @confirm="handleLocationConfirm"
+    />
   </div>
 </template>
 
@@ -119,11 +179,40 @@ function formatGearbox(type: string) {
   padding-bottom: 60px;
 }
 
-.search-bar {
+.top-bar {
   position: sticky;
   top: 0;
   z-index: 100;
   background: #fff;
+  display: flex;
+  align-items: center;
+  padding: 8px 12px;
+  gap: 8px;
+}
+
+.location-entry {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 8px;
+  color: #333;
+  font-size: 14px;
+  flex-shrink: 0;
+}
+
+.location-text {
+  max-width: 60px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.search-bar {
+  flex: 1;
+}
+
+.search-bar :deep(.van-search) {
+  padding: 0;
 }
 
 .brand-section {
