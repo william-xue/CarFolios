@@ -219,7 +219,8 @@
     },
     "home": {
         "banner": {
-            "title": "China Used Cars · Going Global",
+            "titleEn": "CHINA CARS",
+            "titleSub": "GOING GLOBAL",
             "subtitle": "One-stop cross-border trading platform, bringing quality vehicles worldwide",
             "cta": "Browse Now"
         },

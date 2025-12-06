@@ -175,9 +175,14 @@ function onLoginSuccess() {
 }
 
 .logo-text {
-  font-size: 24px;
+  font-size: 22px;
   font-weight: 700;
   color: $primary-color;
+  letter-spacing: 2px;
+  background: linear-gradient(135deg, #1989fa 0%, #0066cc 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
 .search-box {
@@ -210,7 +215,7 @@ function onLoginSuccess() {
 
 .main {
   flex: 1;
-  padding: 24px 0;
+  padding: 2px 0;
 }
 
 .footer {

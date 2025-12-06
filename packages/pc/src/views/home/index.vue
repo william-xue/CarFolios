@@ -131,7 +131,11 @@ function handleTabChange(tab: string) {
       </div>
       
       <div class="hero-content">
-        <h1 class="hero-title">{{ t('home.banner.title') }}</h1>
+        <h1 class="hero-title">
+          <span class="title-main">{{ t('home.banner.titleEn') }}</span>
+          <span class="title-divider">·</span>
+          <span class="title-sub">{{ t('home.banner.titleSub') }}</span>
+        </h1>
         <p class="hero-subtitle">{{ t('home.banner.subtitle') }}</p>
         <el-button type="primary" size="large" class="hero-cta" @click="goToSearch()">
           {{ t('home.banner.cta') }}
@@ -291,57 +295,124 @@ function handleTabChange(tab: string) {
 // Hero 区域
 .hero-section {
   position: relative;
-  height: 420px;
+  height: 500px;
   display: flex;
   align-items: center;
   justify-content: center;
   overflow: hidden;
 }
 
-.hero-bg {
+// 轮播背景
+.hero-slides {
   position: absolute;
   inset: 0;
-  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+}
+
+.hero-slide {
+  position: absolute;
+  inset: 0;
+  background-size: cover;
+  background-position: center;
+  opacity: 0;
+  transform: scale(1.1);
+  transition: opacity 1s ease-in-out, transform 6s ease-out;
   
-  &::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grid" width="10" height="10" patternUnits="userSpaceOnUse"><path d="M 10 0 L 0 0 0 10" fill="none" stroke="rgba(255,255,255,0.03)" stroke-width="0.5"/></pattern></defs><rect width="100" height="100" fill="url(%23grid)"/></svg>');
-    background-size: 50px 50px;
+  &.active {
+    opacity: 1;
+    transform: scale(1);
   }
 }
 
 .hero-overlay {
   position: absolute;
   inset: 0;
-  background: radial-gradient(ellipse at center, transparent 0%, rgba(0,0,0,0.3) 100%);
+  background: linear-gradient(
+    135deg,
+    rgba(10, 20, 40, 0.85) 0%,
+    rgba(20, 40, 80, 0.75) 50%,
+    rgba(15, 52, 96, 0.8) 100%
+  );
+  z-index: 1;
+}
+
+// 轮播指示器
+.slide-indicators {
+  position: absolute;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 12px;
+  z-index: 10;
+}
+
+.indicator {
+  width: 32px;
+  height: 4px;
+  background: rgba(255, 255, 255, 0.4);
+  border-radius: 2px;
+  cursor: pointer;
+  transition: all 0.3s;
+  
+  &:hover {
+    background: rgba(255, 255, 255, 0.7);
+  }
+  
+  &.active {
+    background: #fff;
+    width: 48px;
+  }
 }
 
 .hero-content {
   position: relative;
-  z-index: 1;
+  z-index: 5;
   text-align: center;
   color: #fff;
   padding: 0 24px;
 }
 
 .hero-title {
-  font-size: 48px;
-  font-weight: 700;
-  margin-bottom: 16px;
-  background: linear-gradient(135deg, #fff 0%, #e0e0e0 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  margin-bottom: 24px;
+  text-shadow: 0 4px 30px rgba(0, 0, 0, 0.5);
+}
+
+.title-main {
+  font-size: 64px;
+  font-weight: 800;
+  letter-spacing: 8px;
+  background: linear-gradient(180deg, #fff 0%, #e8e8e8 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
-  text-shadow: 0 4px 20px rgba(0,0,0,0.3);
+}
+
+.title-divider {
+  font-size: 48px;
+  color: rgba(255, 255, 255, 0.6);
+  font-weight: 300;
+}
+
+.title-sub {
+  font-size: 64px;
+  font-weight: 800;
+  letter-spacing: 8px;
+  background: linear-gradient(180deg, #4facfe 0%, #00f2fe 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
 .hero-subtitle {
-  font-size: 20px;
-  color: rgba(255,255,255,0.85);
-  margin-bottom: 32px;
+  font-size: 18px;
+  color: rgba(255, 255, 255, 0.85);
+  margin-bottom: 40px;
   font-weight: 400;
+  letter-spacing: 3px;
 }
 
 .hero-cta {

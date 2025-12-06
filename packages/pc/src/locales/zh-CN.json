@@ -219,7 +219,8 @@
     },
     "home": {
         "banner": {
-            "title": "中国二手车 · 全球出海",
+            "titleEn": "CHINA CARS",
+            "titleSub": "GOING GLOBAL",
             "subtitle": "一站式跨境交易平台，让优质车源走向世界",
             "cta": "立即选购"
         },
