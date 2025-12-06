@@ -1,0 +1,107 @@
+@use './variables.scss' as *;
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html,
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial,
+        'Noto Sans', sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol',
+        'Noto Color Emoji';
+    font-size: 14px;
+    color: $text-primary;
+    background-color: $bg-color-page;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+a {
+    color: $primary-color;
+    text-decoration: none;
+
+    &:hover {
+        text-decoration: underline;
+    }
+}
+
+// 文字省略
+.ellipsis {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.ellipsis-2 {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+// 价格样式
+.price {
+    color: $price-color;
+    font-weight: 600;
+}
+
+// 焦点指示器（无障碍）
+*:focus-visible {
+    outline: 2px solid $primary-color;
+    outline-offset: 2px;
+}
+
+// 屏幕阅读器专用（视觉隐藏但可被读取）
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
+
+// 页面容器
+.page-container {
+    max-width: $content-max-width;
+    margin: 0 auto;
+    padding: 24px;
+}
+
+// 卡片样式
+.card {
+    background: #fff;
+    border-radius: $border-radius-md;
+    box-shadow: $box-shadow-sm;
+    padding: 16px;
+}
+
+// 响应式网格
+.car-grid {
+    display: grid;
+    gap: 20px;
+
+    // 默认 4 列（大屏）
+    grid-template-columns: repeat(4, 1fr);
+
+    // 中等屏幕 3 列
+    @media (max-width: $breakpoint-lg) {
+        grid-template-columns: repeat(3, 1fr);
+    }
+
+    // 小屏幕 2 列
+    @media (max-width: $breakpoint-md) {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    // 移动端 1 列
+    @media (max-width: $breakpoint-sm) {
+        grid-template-columns: 1fr;
+    }
+}

@@ -3,16 +3,57 @@ import * as bcrypt from 'bcryptjs'
 
 const prisma = new PrismaClient()
 
-// 示例车辆图片
+// 本地汽车图片（已下载到 uploads/cars/）
 const carImages = [
-    'https://images.unsplash.com/photo-1555215695-3004980ad54e?w=800',
-    'https://images.unsplash.com/photo-1494976388531-d1058494cdd8?w=800',
-    'https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=800',
-    'https://images.unsplash.com/photo-1542362567-b07e54358753?w=800',
-    'https://images.unsplash.com/photo-1552519507-da3b142c6e3d?w=800',
-    'https://images.unsplash.com/photo-1583121274602-3e2820c69888?w=800',
-    'https://images.unsplash.com/photo-1544636331-e26879cd4d9b?w=800',
-    'https://images.unsplash.com/photo-1580273916550-e323be2ae537?w=800',
+    '/uploads/cars/car-001.jpg',
+    '/uploads/cars/car-002.jpg',
+    '/uploads/cars/car-003.jpg',
+    '/uploads/cars/car-004.jpg',
+    '/uploads/cars/car-005.jpg',
+    '/uploads/cars/car-006.jpg',
+    '/uploads/cars/car-007.jpg',
+    '/uploads/cars/car-008.jpg',
+    '/uploads/cars/car-009.jpg',
+    '/uploads/cars/car-010.jpg',
+    '/uploads/cars/car-011.jpg',
+    '/uploads/cars/car-012.jpg',
+    '/uploads/cars/car-013.jpg',
+    '/uploads/cars/car-014.jpg',
+    '/uploads/cars/car-015.jpg',
+    '/uploads/cars/car-016.jpg',
+    '/uploads/cars/car-017.jpg',
+    '/uploads/cars/car-018.jpg',
+    '/uploads/cars/car-019.jpg',
+    '/uploads/cars/car-020.jpg',
+    '/uploads/cars/car-021.jpg',
+    '/uploads/cars/car-022.jpg',
+    '/uploads/cars/car-023.jpg',
+    '/uploads/cars/car-024.jpg',
+    '/uploads/cars/car-025.jpg',
+    '/uploads/cars/car-026.jpg',
+    '/uploads/cars/car-027.jpg',
+    '/uploads/cars/car-028.jpg',
+    '/uploads/cars/car-029.jpg',
+    '/uploads/cars/car-030.jpg',
+    '/uploads/cars/car-031.jpg',
+    '/uploads/cars/car-032.jpg',
+    '/uploads/cars/car-033.jpg',
+    '/uploads/cars/car-034.jpg',
+    '/uploads/cars/car-035.jpg',
+    '/uploads/cars/car-036.jpg',
+    '/uploads/cars/car-037.jpg',
+    '/uploads/cars/car-038.jpg',
+    '/uploads/cars/car-039.jpg',
+    '/uploads/cars/car-040.jpg',
+    '/uploads/cars/car-041.jpg',
+    '/uploads/cars/car-042.jpg',
+    '/uploads/cars/car-043.jpg',
+    '/uploads/cars/car-044.jpg',
+    '/uploads/cars/car-045.jpg',
+    '/uploads/cars/car-047.jpg',
+    '/uploads/cars/car-048.jpg',
+    '/uploads/cars/car-049.jpg',
+    '/uploads/cars/car-050.jpg',
 ]
 
 // 随机选择图片
@@ -103,8 +144,12 @@ async function main() {
         })
     }
 
-    // 清空并重新创建车系
+    // 清空数据（注意顺序：先删除有外键依赖的表）
+    await prisma.order.deleteMany({})
+    await prisma.car.deleteMany({})
     await prisma.series.deleteMany({})
+    
+    // 重新创建车系
     for (const s of seriesData) {
         await prisma.series.create({ data: s })
     }
@@ -132,10 +177,6 @@ async function main() {
     const allUsers = await prisma.user.findMany()
     const allSeries = await prisma.series.findMany({ include: { brand: true } })
 
-    // 清空现有车源和订单
-    await prisma.order.deleteMany({})
-    await prisma.car.deleteMany({})
-
     // 创建演示车源
     const carConfigs = ['全景天窗', '真皮座椅', '座椅加热', '倒车影像', '360全景影像', '定速巡航', '导航系统', 'CarPlay', '无钥匙进入', '一键启动']
     const cities = [
@@ -144,29 +185,103 @@ async function main() {
         { code: '440100', name: '广州' },
         { code: '440300', name: '深圳' },
         { code: '330100', name: '杭州' },
+        { code: '320100', name: '南京' },
+        { code: '510100', name: '成都' },
+        { code: '500000', name: '重庆' },
+        { code: '420100', name: '武汉' },
+        { code: '610100', name: '西安' },
+        { code: '320500', name: '苏州' },
+        { code: '120000', name: '天津' },
+        { code: '330200', name: '宁波' },
+        { code: '370200', name: '青岛' },
+        { code: '210100', name: '沈阳' },
     ]
     const gearboxes = ['AT', 'MT', 'DCT', 'CVT']
     const emissions = ['国五', '国六']
     const colors = ['白色', '黑色', '银色', '蓝色', '红色']
 
     const carsToCreate = [
-        // 已上架车源
+        // ========== 已上架车源 (40辆) ==========
+        // 宝马系列
         { title: '宝马5系 2021款 530Li 豪华套装', price: 38.8, mileage: 2.5, year: '2021-03', status: 'on' },
-        { title: '奔驰E级 2022款 E300L 运动版', price: 42.5, mileage: 1.8, year: '2022-06', status: 'on' },
-        { title: '奥迪A6L 2021款 45TFSI 臻选版', price: 35.9, mileage: 3.2, year: '2021-08', status: 'on' },
         { title: '宝马3系 2022款 325Li M运动套装', price: 28.5, mileage: 1.5, year: '2022-03', status: 'on' },
+        { title: '宝马X3 2022款 xDrive30i 领先型', price: 35.8, mileage: 1.8, year: '2022-05', status: 'on' },
+        { title: '宝马X5 2021款 xDrive40i 尊享型', price: 62.5, mileage: 2.2, year: '2021-08', status: 'on' },
+        { title: '宝马7系 2022款 735Li 豪华套装', price: 78.8, mileage: 1.0, year: '2022-01', status: 'on' },
+        
+        // 奔驰系列
+        { title: '奔驰E级 2022款 E300L 运动版', price: 42.5, mileage: 1.8, year: '2022-06', status: 'on' },
         { title: '奔驰C级 2021款 C260L 运动版', price: 26.8, mileage: 2.8, year: '2021-05', status: 'on' },
-        { title: '大众迈腾 2022款 380TSI 旗舰版', price: 22.5, mileage: 1.2, year: '2022-01', status: 'on' },
-        { title: '丰田凯美瑞 2021款 2.5G 豪华版', price: 18.9, mileage: 3.5, year: '2021-04', status: 'on' },
+        { title: '奔驰S级 2022款 S400L 商务型', price: 98.8, mileage: 0.8, year: '2022-09', status: 'on' },
+        { title: '奔驰GLC 2022款 GLC300L 4MATIC', price: 45.5, mileage: 1.5, year: '2022-07', status: 'on' },
+        { title: '奔驰GLE 2021款 GLE450 4MATIC', price: 72.8, mileage: 2.0, year: '2021-11', status: 'on' },
+        
+        // 奥迪系列
+        { title: '奥迪A6L 2021款 45TFSI 臻选版', price: 35.9, mileage: 3.2, year: '2021-08', status: 'on' },
+        { title: '奥迪A4L 2022款 40TFSI 豪华版', price: 28.5, mileage: 1.2, year: '2022-04', status: 'on' },
         { title: '奥迪Q5L 2022款 45TFSI 豪华版', price: 39.8, mileage: 1.0, year: '2022-08', status: 'on' },
-        // 待审核车源
+        { title: '奥迪Q7 2021款 45TFSI 豪华版', price: 58.8, mileage: 2.5, year: '2021-06', status: 'on' },
+        { title: '奥迪A8L 2022款 55TFSI 尊贵型', price: 88.8, mileage: 0.6, year: '2022-02', status: 'on' },
+        
+        // 大众系列
+        { title: '大众迈腾 2022款 380TSI 旗舰版', price: 22.5, mileage: 1.2, year: '2022-01', status: 'on' },
+        { title: '大众帕萨特 2021款 380TSI 豪华版', price: 19.8, mileage: 2.5, year: '2021-09', status: 'on' },
+        { title: '大众途观L 2022款 380TSI 四驱旗舰', price: 24.8, mileage: 1.8, year: '2022-03', status: 'on' },
+        { title: '大众探岳 2021款 330TSI 豪华版', price: 18.5, mileage: 3.0, year: '2021-07', status: 'on' },
+        
+        // 丰田系列
+        { title: '丰田凯美瑞 2021款 2.5G 豪华版', price: 18.9, mileage: 3.5, year: '2021-04', status: 'on' },
+        { title: '丰田汉兰达 2022款 2.5L 四驱豪华版', price: 32.8, mileage: 1.5, year: '2022-06', status: 'on' },
+        { title: '丰田RAV4 2021款 2.0L CVT四驱', price: 19.5, mileage: 2.8, year: '2021-10', status: 'on' },
+        { title: '雷克萨斯ES 2022款 300h 卓越版', price: 35.8, mileage: 1.0, year: '2022-05', status: 'on' },
+        
+        // 本田系列
+        { title: '本田雅阁 2022款 260TURBO 旗舰版', price: 19.8, mileage: 1.5, year: '2022-02', status: 'on' },
+        { title: '本田CR-V 2021款 240TURBO CVT四驱', price: 21.5, mileage: 2.2, year: '2021-08', status: 'on' },
+        { title: '本田冠道 2022款 370TURBO 四驱尊享', price: 28.8, mileage: 1.0, year: '2022-04', status: 'on' },
+        
+        // 特斯拉系列
+        { title: '特斯拉Model 3 2022款 Performance高性能版', price: 32.5, mileage: 1.2, year: '2022-07', status: 'on' },
+        { title: '特斯拉Model Y 2022款 长续航全轮驱动版', price: 35.8, mileage: 0.8, year: '2022-09', status: 'on' },
+        { title: '特斯拉Model S 2021款 长续航版', price: 68.8, mileage: 1.5, year: '2021-12', status: 'on' },
+        
+        // 比亚迪系列
+        { title: '比亚迪汉 2022款 EV 四驱高性能版', price: 25.8, mileage: 1.0, year: '2022-06', status: 'on' },
+        { title: '比亚迪唐 2022款 DM-i 112KM 尊荣型', price: 22.5, mileage: 1.5, year: '2022-03', status: 'on' },
+        { title: '比亚迪海豹 2023款 长续航后驱版', price: 21.8, mileage: 0.5, year: '2023-01', status: 'on' },
+        
+        // 保时捷系列（高端）
+        { title: '保时捷Cayenne 2021款 3.0T', price: 85.8, mileage: 2.0, year: '2021-05', status: 'on' },
+        { title: '保时捷Macan 2022款 2.0T', price: 55.8, mileage: 1.2, year: '2022-08', status: 'on' },
+        { title: '保时捷911 2021款 Carrera', price: 128.8, mileage: 0.8, year: '2021-10', status: 'on' },
+        
+        // 路虎系列
+        { title: '路虎揽胜 2022款 3.0T 传世版', price: 135.8, mileage: 0.5, year: '2022-11', status: 'on' },
+        { title: '路虎发现 2021款 3.0T 首发限定版', price: 68.8, mileage: 1.8, year: '2021-09', status: 'on' },
+        
+        // 沃尔沃系列
+        { title: '沃尔沃S90 2022款 B5 智雅豪华版', price: 35.8, mileage: 1.0, year: '2022-04', status: 'on' },
+        { title: '沃尔沃XC60 2021款 B5 四驱智雅版', price: 32.5, mileage: 2.0, year: '2021-07', status: 'on' },
+        
+        // 凯迪拉克系列
+        { title: '凯迪拉克CT6 2022款 28T 铂金版', price: 38.8, mileage: 1.2, year: '2022-05', status: 'on' },
+        { title: '凯迪拉克XT5 2021款 28T 四驱铂金版', price: 32.8, mileage: 2.5, year: '2021-08', status: 'on' },
+        
+        // ========== 待审核车源 (5辆) ==========
         { title: '宝马X5 2023款 xDrive40Li', price: 68.8, mileage: 0.5, year: '2023-02', status: 'pending' },
-        { title: '奔驰GLC 2022款 GLC300L 4MATIC', price: 45.5, mileage: 1.5, year: '2022-09', status: 'pending' },
-        { title: '大众途观L 2021款 380TSI 四驱旗舰', price: 24.8, mileage: 2.0, year: '2021-11', status: 'pending' },
-        // 已下架车源
+        { title: '奔驰GLS 2023款 450 4MATIC', price: 108.8, mileage: 0.3, year: '2023-03', status: 'pending' },
+        { title: '保时捷Panamera 2023款 4S', price: 118.8, mileage: 0.2, year: '2023-04', status: 'pending' },
+        { title: '特斯拉Model X 2023款 长续航版', price: 88.8, mileage: 0.1, year: '2023-05', status: 'pending' },
+        { title: '蔚来ES8 2023款 100kWh 签名版', price: 52.8, mileage: 0.3, year: '2023-02', status: 'pending' },
+        
+        // ========== 已下架车源 (3辆) ==========
         { title: '奥迪A4L 2020款 40TFSI 时尚版', price: 23.5, mileage: 4.5, year: '2020-06', status: 'off' },
-        // 已售出车源
+        { title: '大众CC 2019款 380TSI 魅颜版', price: 18.8, mileage: 5.2, year: '2019-08', status: 'off' },
+        { title: '本田思域 2020款 220TURBO CVT燃动版', price: 12.8, mileage: 4.0, year: '2020-03', status: 'off' },
+        
+        // ========== 已售出车源 (2辆) ==========
         { title: '宝马7系 2021款 740Li 尊享版', price: 85.0, mileage: 2.0, year: '2021-01', status: 'sold' },
+        { title: '奔驰迈巴赫S级 2021款 S480', price: 158.8, mileage: 1.0, year: '2021-06', status: 'sold' },
     ]
 
     const createdCars: any[] = []
