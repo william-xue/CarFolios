@@ -10,7 +10,7 @@ sources:
     branch: main
     certificate:
       type: serviceConnection
-      serviceConnection: wpmy6figj7f9yaswdefaultWorkspace
+      serviceConnection: ys3g4fzsk8igfsc5
 
 defaultWorkspace: carfolios_repo
 
@@ -28,8 +28,8 @@ stages:
             name: "安装 Node.js"
             step: SetupNode
             with:
-              versionType: "custom"
-              nodeVersion: "22"
+              versionType: "nvmrc"
+              nodeVersion: "22.14"
               npmType: "pnpm"
           build_step:
             name: "构建所有项目"
@@ -40,6 +40,12 @@ stages:
                 echo "  CarFolios 构建开始"
                 echo "  时间: $(date '+%Y-%m-%d %H:%M:%S')"
                 echo "=========================================="
+                
+                # 设置淘宝镜像源（解决网络超时问题）
+                echo ""
+                echo ">>> 配置 npm 镜像源..."
+                pnpm config set registry https://registry.npmmirror.com
+                npm config set registry https://registry.npmmirror.com
                 
                 echo ""
                 echo ">>> 构建后端服务..."
@@ -134,29 +140,6 @@ stages:
             cd $ARTIFACT_PATH
             tar -zxvf carfolios-build.tgz
             
-            # ========== 停止旧进程 ==========
-            echo ""
-            echo ">>> 停止旧进程..."
-            API_PORT=3000
-            
-            # 先尝试用 pm2 停止
-            pm2 stop car-trading-api 2>/dev/null || true
-            pm2 delete car-trading-api 2>/dev/null || true
-            
-            # 查找并杀死占用端口的进程
-            OLD_PID=$(lsof -ti tcp:${API_PORT} 2>/dev/null || ss -tlnp | grep ":${API_PORT} " | sed -n 's/.*pid=\([0-9]*\).*/\1/p' | head -n1)
-            if [ -n "$OLD_PID" ] && [ "$OLD_PID" -gt 0 ] 2>/dev/null; then
-                echo "  发现占用端口 ${API_PORT} 的进程: PID=$OLD_PID"
-                kill $OLD_PID 2>/dev/null || true
-                sleep 2
-                # 如果还在运行，强制杀死
-                kill -9 $OLD_PID 2>/dev/null || true
-                echo "  旧进程已停止"
-            else
-                echo "  无进程占用端口 ${API_PORT}"
-            fi
-            sleep 2
-            
             # ========== 部署后端 ==========
             echo ""
             echo ">>> 部署后端服务..."
@@ -180,8 +163,8 @@ stages:
             npx prisma generate
             npx prisma db push
             
-            # 启动后端服务
-            pm2 start dist/main.js --name car-trading-api
+            # 重启后端服务
+            pm2 restart car-trading-api || pm2 start dist/main.js --name car-trading-api
             echo "后端部署完成 ✓"
             
             # ========== 部署前端 ==========
