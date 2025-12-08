@@ -1,0 +1,215 @@
+# CarFolios 简化版流水线配置（推荐）
+# 使用云效内置构建物传递，无需配置制品库
+# Node.js 版本: 22 (项目使用 Vite 7.x + TypeScript 5.9)
+
+sources:
+  carfolios_repo:
+    type: codeup
+    name: CarFolios代码源
+    endpoint: https://codeup.aliyun.com/69327510ab336f9c842c4e06/CarFolios.git
+    branch: main
+    certificate:
+      type: serviceConnection
+      serviceConnection: wpmy6figj7f9yaswdefaultWorkspace
+
+defaultWorkspace: carfolios_repo
+
+stages:
+  build_stage:
+    name: "构建"
+    jobs:
+      build_all_job:
+        name: "Node.js 构建"
+        runsOn:
+          group: public/cn-beijing
+          container: build-steps-public-registry.cn-beijing.cr.aliyuncs.com/build-steps/alinux3:latest
+        steps:
+          setup_node_step:
+            name: "安装 Node.js"
+            step: SetupNode
+            with:
+              versionType: "custom"
+              nodeVersion: "22"
+              npmType: "pnpm"
+          build_step:
+            name: "构建所有项目"
+            step: Command
+            with:
+              run: |
+                echo "=========================================="
+                echo "  CarFolios 构建开始"
+                echo "  时间: $(date '+%Y-%m-%d %H:%M:%S')"
+                echo "=========================================="
+                
+                echo ""
+                echo ">>> 构建后端服务..."
+                cd packages/server
+                pnpm install
+                pnpm run build
+                cd ../..
+                
+                # 构建管理后台
+                echo ""
+                echo ">>> 构建管理后台..."
+                cd packages/admin
+                pnpm install
+                pnpm run build
+                cd ../..
+                
+                # 构建移动端
+                echo ""
+                echo ">>> 构建移动端..."
+                cd packages/mobile
+                pnpm install
+                pnpm run build
+                cd ../..
+                
+                # 构建 PC 端
+                echo ""
+                echo ">>> 构建 PC 端..."
+                cd packages/pc
+                pnpm install
+                pnpm run build
+                cd ../..
+                
+                # 打包构建物（只打包需要部署的文件）
+                echo ""
+                echo ">>> 打包构建物..."
+                mkdir -p artifact
+                
+                # 后端：dist + prisma + package.json
+                mkdir -p artifact/server
+                cp -r packages/server/dist artifact/server/
+                cp -r packages/server/prisma artifact/server/
+                cp packages/server/package.json artifact/server/
+                
+                # 前端：只需要 dist 目录
+                cp -r packages/admin/dist artifact/admin
+                cp -r packages/mobile/dist artifact/mobile
+                cp -r packages/pc/dist artifact/pc
+                
+                # 压缩
+                cd artifact
+                tar -czvf ../carfolios-build.tgz .
+                cd ..
+                
+                echo ""
+                echo "=========================================="
+                echo "  构建完成 ✓"
+                echo "=========================================="
+
+  # ==================== 阶段2: 部署 ====================
+  deploy_stage:
+    name: "部署"
+    jobs:
+      deploy_all_job:
+        name: "主机部署"
+        component: "VMDeploy"
+        with:
+          downloadArtifact: false
+          useEncode: false
+          machineGroup: "iKYG4O6eqX48yNCK"  
+          executeUser: "root"
+          # 使用 SCP 传输构建物
+          upload:
+            - source: "carfolios-build.tgz"
+              target: "/home/admin/app/"
+          run: |
+            #!/bin/bash
+            set -e
+            
+            # 配置
+            DEPLOY_BASE="/var/www/car-trading"
+            ARTIFACT_PATH="/home/admin/app"
+            TIMESTAMP=$(date '+%Y%m%d_%H%M%S')
+            
+            echo "=========================================="
+            echo "  CarFolios 部署开始"
+            echo "  时间: $(date '+%Y-%m-%d %H:%M:%S')"
+            echo "=========================================="
+            
+            # 解压构建物
+            echo ""
+            echo ">>> 解压构建物..."
+            cd $ARTIFACT_PATH
+            tar -zxvf carfolios-build.tgz
+            
+            # ========== 部署后端 ==========
+            echo ""
+            echo ">>> 部署后端服务..."
+            
+            # 备份当前版本
+            if [ -d "$DEPLOY_BASE/server/dist" ]; then
+                cp -r $DEPLOY_BASE/server/dist $DEPLOY_BASE/server/dist_backup_$TIMESTAMP 2>/dev/null || true
+            fi
+            
+            # 复制新文件
+            rm -rf $DEPLOY_BASE/server/dist
+            cp -r $ARTIFACT_PATH/server/dist $DEPLOY_BASE/server/
+            cp -r $ARTIFACT_PATH/server/prisma $DEPLOY_BASE/server/
+            cp $ARTIFACT_PATH/server/package.json $DEPLOY_BASE/server/
+            
+            # 安装依赖
+            cd $DEPLOY_BASE/server
+            pnpm install --prod
+            
+            # 生成 Prisma Client 并同步数据库
+            npx prisma generate
+            npx prisma db push
+            
+            # 重启后端服务
+            pm2 restart car-trading-api || pm2 start dist/main.js --name car-trading-api
+            echo "后端部署完成 ✓"
+            
+            # ========== 部署前端 ==========
+            echo ""
+            echo ">>> 部署管理后台..."
+            rm -rf $DEPLOY_BASE/admin/*
+            cp -r $ARTIFACT_PATH/admin/* $DEPLOY_BASE/admin/
+            echo "管理后台部署完成 ✓"
+            
+            echo ""
+            echo ">>> 部署移动端..."
+            rm -rf $DEPLOY_BASE/mobile/*
+            cp -r $ARTIFACT_PATH/mobile/* $DEPLOY_BASE/mobile/
+            echo "移动端部署完成 ✓"
+            
+            echo ""
+            echo ">>> 部署 PC 端..."
+            rm -rf $DEPLOY_BASE/pc/*
+            cp -r $ARTIFACT_PATH/pc/* $DEPLOY_BASE/pc/
+            echo "PC 端部署完成 ✓"
+            
+            # 重载 Nginx
+            echo ""
+            echo ">>> 重载 Nginx..."
+            nginx -t && nginx -s reload
+            echo "Nginx 重载完成 ✓"
+            
+            # 清理临时文件
+            echo ""
+            echo ">>> 清理临时文件..."
+            rm -rf $ARTIFACT_PATH/server $ARTIFACT_PATH/admin $ARTIFACT_PATH/mobile $ARTIFACT_PATH/pc
+            rm -f $ARTIFACT_PATH/carfolios-build.tgz
+            
+            # 清理旧备份（保留最近3个）
+            cd $DEPLOY_BASE/server
+            ls -dt dist_backup_* 2>/dev/null | tail -n +4 | xargs rm -rf 2>/dev/null || true
+            
+            # 健康检查
+            echo ""
+            echo ">>> 健康检查..."
+            sleep 3
+            if pm2 status car-trading-api | grep -q "online"; then   
+
+            
+                echo "后端服务运行正常 ✓"
+            else
+                echo "警告: 后端服务可能未正常启动"
+                pm2 logs car-trading-api --lines 10
+            fi
+            
+            echo ""
+            echo "=========================================="
+            echo "  部署完成 ✓"
+            echo "=========================================="

@@ -1,0 +1,207 @@
+# CarFolios 完整版流水线配置（并行构建）
+# 4个项目并行构建，提高构建速度
+# Node.js 版本: 22 (项目使用 Vite 7.x + TypeScript 5.9)
+
+sources:
+  carfolios_repo:
+    type: git
+    name: CarFolios代码源
+    endpoint: https://codeup.aliyun.com/your-org/CarFolios.git  # 替换为你的仓库地址
+    branch: main
+
+stages:
+  # ==================== 阶段1: 并行构建 ====================
+  build_stage:
+    name: "构建"
+    jobs:
+      # 构建后端服务
+      build_server_job:
+        name: "构建后端服务"
+        runsOn:
+          group: public/cn-beijing
+          container: build-steps-public-registry.cn-beijing.cr.aliyuncs.com/build-steps/alinux3:latest
+        steps:
+          - name: "安装 Node.js"
+            step: SetupNode
+            with:
+              versionType: "custom"
+              nodeVersion: "22"
+              npmType: "pnpm"
+          
+          - name: "构建后端"
+            step: Command
+            with:
+              run: |
+                echo "=== 构建后端服务 ==="
+                cd packages/server
+                pnpm install
+                pnpm run build
+                
+                # 打包
+                mkdir -p ../../artifact/server
+                cp -r dist ../../artifact/server/
+                cp -r prisma ../../artifact/server/
+                cp package.json ../../artifact/server/
+                echo "后端构建完成 ✓"
+
+      # 构建管理后台
+      build_admin_job:
+        name: "构建管理后台"
+        runsOn:
+          group: public/cn-beijing
+          container: build-steps-public-registry.cn-beijing.cr.aliyuncs.com/build-steps/alinux3:latest
+        steps:
+          - name: "安装 Node.js"
+            step: SetupNode
+            with:
+              versionType: "custom"
+              nodeVersion: "22"
+              npmType: "pnpm"
+          
+          - name: "构建 Admin"
+            step: Command
+            with:
+              run: |
+                echo "=== 构建管理后台 ==="
+                cd packages/admin
+                pnpm install
+                pnpm run build
+                
+                mkdir -p ../../artifact
+                cp -r dist ../../artifact/admin
+                echo "管理后台构建完成 ✓"
+
+      # 构建移动端
+      build_mobile_job:
+        name: "构建移动端"
+        runsOn:
+          group: public/cn-beijing
+          container: build-steps-public-registry.cn-beijing.cr.aliyuncs.com/build-steps/alinux3:latest
+        steps:
+          - name: "安装 Node.js"
+            step: SetupNode
+            with:
+              versionType: "custom"
+              nodeVersion: "22"
+              npmType: "pnpm"
+          
+          - name: "构建 Mobile"
+            step: Command
+            with:
+              run: |
+                echo "=== 构建移动端 ==="
+                cd packages/mobile
+                pnpm install
+                pnpm run build
+                
+                mkdir -p ../../artifact
+                cp -r dist ../../artifact/mobile
+                echo "移动端构建完成 ✓"
+
+      # 构建 PC 端
+      build_pc_job:
+        name: "构建PC端"
+        runsOn:
+          group: public/cn-beijing
+          container: build-steps-public-registry.cn-beijing.cr.aliyuncs.com/build-steps/alinux3:latest
+        steps:
+          - name: "安装 Node.js"
+            step: SetupNode
+            with:
+              versionType: "custom"
+              nodeVersion: "22"
+              npmType: "pnpm"
+          
+          - name: "构建 PC"
+            step: Command
+            with:
+              run: |
+                echo "=== 构建 PC 端 ==="
+                cd packages/pc
+                pnpm install
+                pnpm run build
+                
+                mkdir -p ../../artifact
+                cp -r dist ../../artifact/pc
+                echo "PC 端构建完成 ✓"
+
+  # ==================== 阶段2: 打包 ====================
+  package_stage:
+    name: "打包"
+    jobs:
+      package_job:
+        name: "打包构建物"
+        runsOn:
+          group: public/cn-beijing
+          container: build-steps-public-registry.cn-beijing.cr.aliyuncs.com/build-steps/alinux3:latest
+        steps:
+          - name: "打包所有构建物"
+            step: Command
+            with:
+              run: |
+                echo "=== 打包构建物 ==="
+                cd artifact
+                tar -czvf ../carfolios-build.tgz .
+                echo "打包完成 ✓"
+
+  # ==================== 阶段3: 部署 ====================
+  deploy_stage:
+    name: "部署"
+    jobs:
+      deploy_job:
+        name: "主机部署"
+        component: "VMDeploy"
+        with:
+          downloadArtifact: false
+          useEncode: false
+          machineGroup: "<your-machine-group-id>"  # 替换为你的主机组ID
+          executeUser: "root"
+          upload:
+            - source: "carfolios-build.tgz"
+              target: "/home/admin/app/"
+          run: |
+            #!/bin/bash
+            set -e
+            
+            DEPLOY_BASE="/var/www/car-trading"
+            ARTIFACT_PATH="/home/admin/app"
+            TIMESTAMP=$(date '+%Y%m%d_%H%M%S')
+            
+            echo "=========================================="
+            echo "  CarFolios 部署开始"
+            echo "=========================================="
+            
+            # 解压
+            cd $ARTIFACT_PATH
+            tar -zxvf carfolios-build.tgz
+            
+            # 部署后端
+            echo ">>> 部署后端..."
+            [ -d "$DEPLOY_BASE/server/dist" ] && cp -r $DEPLOY_BASE/server/dist $DEPLOY_BASE/server/dist_backup_$TIMESTAMP || true
+            rm -rf $DEPLOY_BASE/server/dist
+            cp -r $ARTIFACT_PATH/server/dist $DEPLOY_BASE/server/
+            cp -r $ARTIFACT_PATH/server/prisma $DEPLOY_BASE/server/
+            cp $ARTIFACT_PATH/server/package.json $DEPLOY_BASE/server/
+            cd $DEPLOY_BASE/server
+            pnpm install --prod
+            npx prisma generate
+            npx prisma db push
+            pm2 restart car-trading-api || pm2 start dist/main.js --name car-trading-api
+            
+            # 部署前端
+            echo ">>> 部署前端..."
+            rm -rf $DEPLOY_BASE/admin/* && cp -r $ARTIFACT_PATH/admin/* $DEPLOY_BASE/admin/
+            rm -rf $DEPLOY_BASE/mobile/* && cp -r $ARTIFACT_PATH/mobile/* $DEPLOY_BASE/mobile/
+            rm -rf $DEPLOY_BASE/pc/* && cp -r $ARTIFACT_PATH/pc/* $DEPLOY_BASE/pc/
+            
+            # 重载 Nginx
+            nginx -t && nginx -s reload
+            
+            # 清理
+            rm -rf $ARTIFACT_PATH/server $ARTIFACT_PATH/admin $ARTIFACT_PATH/mobile $ARTIFACT_PATH/pc
+            rm -f $ARTIFACT_PATH/carfolios-build.tgz
+            cd $DEPLOY_BASE/server && ls -dt dist_backup_* 2>/dev/null | tail -n +4 | xargs rm -rf 2>/dev/null || true
+            
+            echo "=========================================="
+            echo "  部署完成 ✓"
+            echo "=========================================="
