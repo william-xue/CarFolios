@@ -7,10 +7,15 @@ export {}
 /* prettier-ignore */
 declare module 'vue' {
   export interface GlobalComponents {
+    BrandGrid: typeof import('./src/components/BrandGrid.vue')['default']
+    CarListTabs: typeof import('./src/components/CarListTabs.vue')['default']
+    FeatureCards: typeof import('./src/components/FeatureCards.vue')['default']
+    HeroSection: typeof import('./src/components/HeroSection.vue')['default']
     LocationFilter: typeof import('./src/components/LocationFilter.vue')['default']
     RegionPicker: typeof import('./src/components/RegionPicker.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
+    TrustBadges: typeof import('./src/components/TrustBadges.vue')['default']
     VanActionSheet: typeof import('vant/es')['ActionSheet']
     VanButton: typeof import('vant/es')['Button']
     VanCell: typeof import('vant/es')['Cell']

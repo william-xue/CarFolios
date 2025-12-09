@@ -1,12 +1,18 @@
 <script setup lang="ts">
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useCarStore } from '@/stores/car'
+import HeroSection from '@/components/HeroSection.vue'
+import FeatureCards from '@/components/FeatureCards.vue'
+import BrandGrid from '@/components/BrandGrid.vue'
+import CarListTabs from '@/components/CarListTabs.vue'
+import TrustBadges from '@/components/TrustBadges.vue'
 import LocationFilter from '@/components/LocationFilter.vue'
 
 const router = useRouter()
 const carStore = useCarStore()
 
+// 搜索和分页
 const keyword = ref('')
 const page = ref(1)
 const pageSize = 10
@@ -19,6 +25,69 @@ const selectedProvinceId = ref<number | undefined>()
 const selectedCityId = ref<number | undefined>()
 const selectedProvinceName = ref<string | undefined>()
 const selectedCityName = ref<string | undefined>()
+
+// Tab 切换
+type TabType = 'recommend' | 'latest' | 'hot'
+const activeTab = ref<TabType>('recommend')
+
+// Hero 轮播图数据
+const heroSlides = [
+  {
+    image: 'https://images.unsplash.com/photo-1494976388531-d1058494cdd8?w=800&q=80',
+    alt: '豪华轿车'
+  },
+  {
+    image: 'https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=800&q=80',
+    alt: '跑车'
+  },
+  {
+    image: 'https://images.unsplash.com/photo-1552519507-da3b142c6e3d?w=800&q=80',
+    alt: '经典车型'
+  }
+]
+
+// 平台统计数据
+const platformStats = ref({
+  cars: 2680,
+  cities: 56,
+  deals: 12800,
+  partners: 320
+})
+
+// 服务亮点数据
+const features = [
+  {
+    icon: 'location-o',
+    title: '全球车源',
+    description: '覆盖全国优质车源',
+    gradient: 'purple' as const
+  },
+  {
+    icon: 'credit-pay',
+    title: '安全支付',
+    description: '资金担保交易',
+    gradient: 'pink' as const
+  },
+  {
+    icon: 'certificate',
+    title: '专业检测',
+    description: '200+项检测',
+    gradient: 'blue' as const
+  },
+  {
+    icon: 'service-o',
+    title: '贴心服务',
+    description: '7x24小时在线',
+    gradient: 'green' as const
+  }
+]
+
+// 信任徽章数据
+const trustBadges = [
+  { icon: 'medal-o', text: '正规资质' },
+  { icon: 'shield-o', text: '安全交易' },
+  { icon: 'service-o', text: '专业服务' }
+]
 
 // 当前位置显示文本
 const locationText = computed(() => {
@@ -48,6 +117,7 @@ async function loadData() {
 async function onRefresh() {
   page.value = 1
   finished.value = false
+  carStore.cars = []
   await loadData()
   refreshing.value = false
 }
@@ -81,18 +151,26 @@ function handleLocationConfirm(data: {
   selectedProvinceName.value = data.provinceName
   selectedCityId.value = data.cityId
   selectedCityName.value = data.cityName
-  
-  // 重新加载数据
-  page.value = 1
-  finished.value = false
-  carStore.cars = []
-  loadData()
+  onRefresh()
 }
 
 // 打开位置筛选
 function openLocationFilter() {
   showLocationFilter.value = true
 }
+
+// 品牌点击
+function handleBrandSelect(brandId: number) {
+  router.push({ path: '/search', query: { brandId: String(brandId) } })
+}
+
+// Tab 切换
+function handleTabChange(tab: TabType) {
+  activeTab.value = tab
+  onRefresh()
+}
+
+import { computed } from 'vue'
 </script>
 
 <template>
@@ -115,24 +193,30 @@ function openLocationFilter() {
       </div>
     </div>
 
+    <!-- Hero 轮播区 -->
+    <HeroSection
+      :slides="heroSlides"
+      :stats="platformStats"
+    />
+
+    <!-- 服务亮点 -->
+    <FeatureCards :features="features" />
+
     <!-- 品牌快捷入口 -->
-    <div class="brand-section">
-      <div class="brand-list">
-        <div
-          v-for="brand in carStore.brands.slice(0, 8)"
-          :key="brand.id"
-          class="brand-item"
-        >
-          <img v-if="brand.logo" :src="brand.logo" :alt="brand.name" class="brand-logo" />
-          <div v-else class="brand-placeholder">{{ brand.name[0] }}</div>
-          <span class="brand-name">{{ brand.name }}</span>
-        </div>
-      </div>
-    </div>
+    <BrandGrid
+      :brands="carStore.brands"
+      :loading="carStore.loading && carStore.brands.length === 0"
+      @select="handleBrandSelect"
+    />
+
+    <!-- 车源列表 Tab -->
+    <CarListTabs
+      :active-tab="activeTab"
+      @change="handleTabChange"
+    />
 
     <!-- 车源列表 -->
     <div class="car-list-section">
-      <div class="section-title">精选好车</div>
       <van-pull-refresh v-model="refreshing" @refresh="onRefresh">
         <van-list
           v-model:loading="carStore.loading"
@@ -146,7 +230,12 @@ function openLocationFilter() {
             class="car-card"
             @click="goToDetail(car.id)"
           >
-            <van-image :src="car.coverImage" fit="cover" class="car-image" />
+            <van-image 
+              :src="car.coverImage" 
+              fit="cover" 
+              class="car-image"
+              lazy-load
+            />
             <div class="car-info">
               <div class="car-title ellipsis-2">{{ car.title }}</div>
               <div class="car-tags">
@@ -163,6 +252,9 @@ function openLocationFilter() {
         </van-list>
       </van-pull-refresh>
     </div>
+
+    <!-- 信任徽章 -->
+    <TrustBadges :badges="trustBadges" />
     
     <!-- 位置筛选弹窗 -->
     <LocationFilter
@@ -177,6 +269,7 @@ function openLocationFilter() {
 <style scoped>
 .home-page {
   padding-bottom: 60px;
+  background: #f5f5f5;
 }
 
 .top-bar {
@@ -215,57 +308,9 @@ function openLocationFilter() {
   padding: 0;
 }
 
-.brand-section {
-  background: #fff;
-  padding: 12px;
-  margin-bottom: 12px;
-}
-
-.brand-list {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 12px;
-}
-
-.brand-item {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 4px;
-}
-
-.brand-logo {
-  width: 40px;
-  height: 40px;
-  object-fit: contain;
-}
-
-.brand-placeholder {
-  width: 40px;
-  height: 40px;
-  background: #f5f5f5;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 16px;
-  color: #666;
-}
-
-.brand-name {
-  font-size: 12px;
-  color: #666;
-}
-
 .car-list-section {
   background: #fff;
-  padding: 12px;
-}
-
-.section-title {
-  font-size: 16px;
-  font-weight: 600;
-  margin-bottom: 12px;
+  padding: 0 16px 16px;
 }
 
 .car-card {
@@ -280,6 +325,7 @@ function openLocationFilter() {
   height: 90px;
   border-radius: 8px;
   flex-shrink: 0;
+  overflow: hidden;
 }
 
 .car-info {
@@ -294,6 +340,13 @@ function openLocationFilter() {
   font-size: 14px;
   line-height: 1.4;
   color: #333;
+}
+
+.ellipsis-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
 .car-tags {

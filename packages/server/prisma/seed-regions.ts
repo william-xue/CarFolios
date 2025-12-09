@@ -2,126 +2,269 @@ import { PrismaClient } from '@prisma/client'
 
 const prisma = new PrismaClient()
 
-// 中国省市区数据（精简版，包含主要省份和城市）
+// 精简版省市区数据：31个省份 + 5个重点省份完整市区数据
 const regionsData = [
-    // 北京市
-    { id: 110000, name: '北京市', parentId: null, level: 1, pinyin: 'beijing', lat: 39.9042, lng: 116.4074 },
-    { id: 110100, name: '北京市', parentId: 110000, level: 2, pinyin: 'beijing', lat: 39.9042, lng: 116.4074 },
-    { id: 110101, name: '东城区', parentId: 110100, level: 3, pinyin: 'dongcheng', lat: 39.9289, lng: 116.4160 },
-    { id: 110102, name: '西城区', parentId: 110100, level: 3, pinyin: 'xicheng', lat: 39.9125, lng: 116.3660 },
-    { id: 110105, name: '朝阳区', parentId: 110100, level: 3, pinyin: 'chaoyang', lat: 39.9215, lng: 116.4435 },
-    { id: 110106, name: '丰台区', parentId: 110100, level: 3, pinyin: 'fengtai', lat: 39.8585, lng: 116.2870 },
-    { id: 110108, name: '海淀区', parentId: 110100, level: 3, pinyin: 'haidian', lat: 39.9590, lng: 116.2980 },
+    // ========== 北京市（完整）==========
+    { id: 110000, name: '北京市', parentId: null, level: 1, pinyin: 'beijing' },
+    { id: 110100, name: '北京市', parentId: 110000, level: 2, pinyin: 'beijing' },
+    { id: 110101, name: '东城区', parentId: 110100, level: 3, pinyin: 'dongcheng' },
+    { id: 110102, name: '西城区', parentId: 110100, level: 3, pinyin: 'xicheng' },
+    { id: 110105, name: '朝阳区', parentId: 110100, level: 3, pinyin: 'chaoyang' },
+    { id: 110106, name: '丰台区', parentId: 110100, level: 3, pinyin: 'fengtai' },
+    { id: 110107, name: '石景山区', parentId: 110100, level: 3, pinyin: 'shijingshan' },
+    { id: 110108, name: '海淀区', parentId: 110100, level: 3, pinyin: 'haidian' },
+    { id: 110112, name: '通州区', parentId: 110100, level: 3, pinyin: 'tongzhou' },
+    { id: 110113, name: '顺义区', parentId: 110100, level: 3, pinyin: 'shunyi' },
+    { id: 110114, name: '昌平区', parentId: 110100, level: 3, pinyin: 'changping' },
+    { id: 110115, name: '大兴区', parentId: 110100, level: 3, pinyin: 'daxing' },
 
-    // 上海市
-    { id: 310000, name: '上海市', parentId: null, level: 1, pinyin: 'shanghai', lat: 31.2304, lng: 121.4737 },
-    { id: 310100, name: '上海市', parentId: 310000, level: 2, pinyin: 'shanghai', lat: 31.2304, lng: 121.4737 },
-    { id: 310101, name: '黄浦区', parentId: 310100, level: 3, pinyin: 'huangpu', lat: 31.2319, lng: 121.4846 },
-    { id: 310104, name: '徐汇区', parentId: 310100, level: 3, pinyin: 'xuhui', lat: 31.1884, lng: 121.4365 },
-    { id: 310105, name: '长宁区', parentId: 310100, level: 3, pinyin: 'changning', lat: 31.2204, lng: 121.4247 },
-    { id: 310106, name: '静安区', parentId: 310100, level: 3, pinyin: 'jingan', lat: 31.2286, lng: 121.4480 },
-    { id: 310107, name: '普陀区', parentId: 310100, level: 3, pinyin: 'putuo', lat: 31.2495, lng: 121.3970 },
-    { id: 310115, name: '浦东新区', parentId: 310100, level: 3, pinyin: 'pudong', lat: 31.2214, lng: 121.5447 },
+    // ========== 上海市（完整）==========
+    { id: 310000, name: '上海市', parentId: null, level: 1, pinyin: 'shanghai' },
+    { id: 310100, name: '上海市', parentId: 310000, level: 2, pinyin: 'shanghai' },
+    { id: 310101, name: '黄浦区', parentId: 310100, level: 3, pinyin: 'huangpu' },
+    { id: 310104, name: '徐汇区', parentId: 310100, level: 3, pinyin: 'xuhui' },
+    { id: 310105, name: '长宁区', parentId: 310100, level: 3, pinyin: 'changning' },
+    { id: 310106, name: '静安区', parentId: 310100, level: 3, pinyin: 'jingan' },
+    { id: 310107, name: '普陀区', parentId: 310100, level: 3, pinyin: 'putuo' },
+    { id: 310109, name: '虹口区', parentId: 310100, level: 3, pinyin: 'hongkou' },
+    { id: 310110, name: '杨浦区', parentId: 310100, level: 3, pinyin: 'yangpu' },
+    { id: 310112, name: '闵行区', parentId: 310100, level: 3, pinyin: 'minhang' },
+    { id: 310113, name: '宝山区', parentId: 310100, level: 3, pinyin: 'baoshan' },
+    { id: 310115, name: '浦东新区', parentId: 310100, level: 3, pinyin: 'pudong' },
+    { id: 310117, name: '松江区', parentId: 310100, level: 3, pinyin: 'songjiang' },
+    { id: 310118, name: '青浦区', parentId: 310100, level: 3, pinyin: 'qingpu' },
 
-    // 广东省
-    { id: 440000, name: '广东省', parentId: null, level: 1, pinyin: 'guangdong', lat: 23.1291, lng: 113.2644 },
-    { id: 440100, name: '广州市', parentId: 440000, level: 2, pinyin: 'guangzhou', lat: 23.1291, lng: 113.2644 },
-    { id: 440103, name: '荔湾区', parentId: 440100, level: 3, pinyin: 'liwan', lat: 23.1259, lng: 113.2440 },
-    { id: 440104, name: '越秀区', parentId: 440100, level: 3, pinyin: 'yuexiu', lat: 23.1289, lng: 113.2668 },
-    { id: 440105, name: '海珠区', parentId: 440100, level: 3, pinyin: 'haizhu', lat: 23.0839, lng: 113.3170 },
-    { id: 440106, name: '天河区', parentId: 440100, level: 3, pinyin: 'tianhe', lat: 23.1249, lng: 113.3612 },
-    { id: 440111, name: '白云区', parentId: 440100, level: 3, pinyin: 'baiyun', lat: 23.1647, lng: 113.2730 },
-    { id: 440300, name: '深圳市', parentId: 440000, level: 2, pinyin: 'shenzhen', lat: 22.5431, lng: 114.0579 },
-    { id: 440303, name: '罗湖区', parentId: 440300, level: 3, pinyin: 'luohu', lat: 22.5482, lng: 114.1315 },
-    { id: 440304, name: '福田区', parentId: 440300, level: 3, pinyin: 'futian', lat: 22.5219, lng: 114.0545 },
-    { id: 440305, name: '南山区', parentId: 440300, level: 3, pinyin: 'nanshan', lat: 22.5329, lng: 113.9305 },
-    { id: 440306, name: '宝安区', parentId: 440300, level: 3, pinyin: 'baoan', lat: 22.5553, lng: 113.8830 },
-    { id: 440307, name: '龙岗区', parentId: 440300, level: 3, pinyin: 'longgang', lat: 22.7209, lng: 114.2470 },
+    // ========== 天津市 ==========
+    { id: 120000, name: '天津市', parentId: null, level: 1, pinyin: 'tianjin' },
+    { id: 120100, name: '天津市', parentId: 120000, level: 2, pinyin: 'tianjin' },
+    { id: 120101, name: '和平区', parentId: 120100, level: 3, pinyin: 'heping' },
+    { id: 120102, name: '河东区', parentId: 120100, level: 3, pinyin: 'hedong' },
+    { id: 120104, name: '南开区', parentId: 120100, level: 3, pinyin: 'nankai' },
+    { id: 120116, name: '滨海新区', parentId: 120100, level: 3, pinyin: 'binhai' },
 
-    // 江苏省
-    { id: 320000, name: '江苏省', parentId: null, level: 1, pinyin: 'jiangsu', lat: 32.0617, lng: 118.7633 },
-    { id: 320100, name: '南京市', parentId: 320000, level: 2, pinyin: 'nanjing', lat: 32.0617, lng: 118.7633 },
-    { id: 320102, name: '玄武区', parentId: 320100, level: 3, pinyin: 'xuanwu', lat: 32.0486, lng: 118.7978 },
-    { id: 320104, name: '秦淮区', parentId: 320100, level: 3, pinyin: 'qinhuai', lat: 32.0339, lng: 118.7946 },
-    { id: 320105, name: '建邺区', parentId: 320100, level: 3, pinyin: 'jianye', lat: 32.0035, lng: 118.7320 },
-    { id: 320106, name: '鼓楼区', parentId: 320100, level: 3, pinyin: 'gulou', lat: 32.0660, lng: 118.7697 },
-    { id: 320500, name: '苏州市', parentId: 320000, level: 2, pinyin: 'suzhou', lat: 31.2990, lng: 120.5853 },
-    { id: 320505, name: '虎丘区', parentId: 320500, level: 3, pinyin: 'huqiu', lat: 31.2956, lng: 120.5716 },
-    { id: 320506, name: '吴中区', parentId: 320500, level: 3, pinyin: 'wuzhong', lat: 31.2627, lng: 120.6320 },
-    { id: 320507, name: '相城区', parentId: 320500, level: 3, pinyin: 'xiangcheng', lat: 31.3690, lng: 120.6423 },
-    { id: 320508, name: '姑苏区', parentId: 320500, level: 3, pinyin: 'gusu', lat: 31.3116, lng: 120.6170 },
-    { id: 320509, name: '吴江区', parentId: 320500, level: 3, pinyin: 'wujiang', lat: 31.1380, lng: 120.6450 },
-    { id: 320585, name: '昆山市', parentId: 320500, level: 3, pinyin: 'kunshan', lat: 31.3847, lng: 120.9808 },
+    // ========== 重庆市 ==========
+    { id: 500000, name: '重庆市', parentId: null, level: 1, pinyin: 'chongqing' },
+    { id: 500100, name: '重庆市', parentId: 500000, level: 2, pinyin: 'chongqing' },
+    { id: 500103, name: '渝中区', parentId: 500100, level: 3, pinyin: 'yuzhong' },
+    { id: 500105, name: '江北区', parentId: 500100, level: 3, pinyin: 'jiangbei' },
+    { id: 500106, name: '沙坪坝区', parentId: 500100, level: 3, pinyin: 'shapingba' },
+    { id: 500108, name: '南岸区', parentId: 500100, level: 3, pinyin: 'nanan' },
 
-    // 浙江省
-    { id: 330000, name: '浙江省', parentId: null, level: 1, pinyin: 'zhejiang', lat: 30.2741, lng: 120.1551 },
-    { id: 330100, name: '杭州市', parentId: 330000, level: 2, pinyin: 'hangzhou', lat: 30.2741, lng: 120.1551 },
-    { id: 330102, name: '上城区', parentId: 330100, level: 3, pinyin: 'shangcheng', lat: 30.2425, lng: 120.1693 },
-    { id: 330105, name: '拱墅区', parentId: 330100, level: 3, pinyin: 'gongshu', lat: 30.3197, lng: 120.1415 },
-    { id: 330106, name: '西湖区', parentId: 330100, level: 3, pinyin: 'xihu', lat: 30.2594, lng: 120.1300 },
-    { id: 330108, name: '滨江区', parentId: 330100, level: 3, pinyin: 'binjiang', lat: 30.2084, lng: 120.2120 },
-    { id: 330109, name: '萧山区', parentId: 330100, level: 3, pinyin: 'xiaoshan', lat: 30.1833, lng: 120.2643 },
-    { id: 330110, name: '余杭区', parentId: 330100, level: 3, pinyin: 'yuhang', lat: 30.4189, lng: 120.2990 },
+    // ========== 广东省（完整）==========
+    { id: 440000, name: '广东省', parentId: null, level: 1, pinyin: 'guangdong' },
+    { id: 440100, name: '广州市', parentId: 440000, level: 2, pinyin: 'guangzhou' },
+    { id: 440103, name: '荔湾区', parentId: 440100, level: 3, pinyin: 'liwan' },
+    { id: 440104, name: '越秀区', parentId: 440100, level: 3, pinyin: 'yuexiu' },
+    { id: 440105, name: '海珠区', parentId: 440100, level: 3, pinyin: 'haizhu' },
+    { id: 440106, name: '天河区', parentId: 440100, level: 3, pinyin: 'tianhe' },
+    { id: 440111, name: '白云区', parentId: 440100, level: 3, pinyin: 'baiyun' },
+    { id: 440112, name: '黄埔区', parentId: 440100, level: 3, pinyin: 'huangpu' },
+    { id: 440113, name: '番禺区', parentId: 440100, level: 3, pinyin: 'panyu' },
+    { id: 440115, name: '南沙区', parentId: 440100, level: 3, pinyin: 'nansha' },
+    { id: 440300, name: '深圳市', parentId: 440000, level: 2, pinyin: 'shenzhen' },
+    { id: 440303, name: '罗湖区', parentId: 440300, level: 3, pinyin: 'luohu' },
+    { id: 440304, name: '福田区', parentId: 440300, level: 3, pinyin: 'futian' },
+    { id: 440305, name: '南山区', parentId: 440300, level: 3, pinyin: 'nanshan' },
+    { id: 440306, name: '宝安区', parentId: 440300, level: 3, pinyin: 'baoan' },
+    { id: 440307, name: '龙岗区', parentId: 440300, level: 3, pinyin: 'longgang' },
+    { id: 440309, name: '龙华区', parentId: 440300, level: 3, pinyin: 'longhua' },
+    { id: 440311, name: '光明区', parentId: 440300, level: 3, pinyin: 'guangming' },
+    { id: 440400, name: '珠海市', parentId: 440000, level: 2, pinyin: 'zhuhai' },
+    { id: 440402, name: '香洲区', parentId: 440400, level: 3, pinyin: 'xiangzhou' },
+    { id: 440403, name: '斗门区', parentId: 440400, level: 3, pinyin: 'doumen' },
+    { id: 440600, name: '佛山市', parentId: 440000, level: 2, pinyin: 'foshan' },
+    { id: 440604, name: '禅城区', parentId: 440600, level: 3, pinyin: 'chancheng' },
+    { id: 440605, name: '南海区', parentId: 440600, level: 3, pinyin: 'nanhai' },
+    { id: 440606, name: '顺德区', parentId: 440600, level: 3, pinyin: 'shunde' },
+    { id: 441900, name: '东莞市', parentId: 440000, level: 2, pinyin: 'dongguan' },
+    { id: 441901, name: '莞城街道', parentId: 441900, level: 3, pinyin: 'guancheng' },
+    { id: 441902, name: '南城街道', parentId: 441900, level: 3, pinyin: 'nancheng' },
+    { id: 441300, name: '惠州市', parentId: 440000, level: 2, pinyin: 'huizhou' },
+    { id: 441302, name: '惠城区', parentId: 441300, level: 3, pinyin: 'huicheng' },
+    { id: 441303, name: '惠阳区', parentId: 441300, level: 3, pinyin: 'huiyang' },
 
-    // 四川省
-    { id: 510000, name: '四川省', parentId: null, level: 1, pinyin: 'sichuan', lat: 30.6598, lng: 104.0657 },
-    { id: 510100, name: '成都市', parentId: 510000, level: 2, pinyin: 'chengdu', lat: 30.6598, lng: 104.0657 },
-    { id: 510104, name: '锦江区', parentId: 510100, level: 3, pinyin: 'jinjiang', lat: 30.6538, lng: 104.0833 },
-    { id: 510105, name: '青羊区', parentId: 510100, level: 3, pinyin: 'qingyang', lat: 30.6739, lng: 104.0612 },
-    { id: 510106, name: '金牛区', parentId: 510100, level: 3, pinyin: 'jinniu', lat: 30.6913, lng: 104.0517 },
-    { id: 510107, name: '武侯区', parentId: 510100, level: 3, pinyin: 'wuhou', lat: 30.6420, lng: 104.0430 },
-    { id: 510108, name: '成华区', parentId: 510100, level: 3, pinyin: 'chenghua', lat: 30.6599, lng: 104.1018 },
-    { id: 510116, name: '双流区', parentId: 510100, level: 3, pinyin: 'shuangliu', lat: 30.5744, lng: 103.9237 },
+    // ========== 浙江省（完整）==========
+    { id: 330000, name: '浙江省', parentId: null, level: 1, pinyin: 'zhejiang' },
+    { id: 330100, name: '杭州市', parentId: 330000, level: 2, pinyin: 'hangzhou' },
+    { id: 330102, name: '上城区', parentId: 330100, level: 3, pinyin: 'shangcheng' },
+    { id: 330105, name: '拱墅区', parentId: 330100, level: 3, pinyin: 'gongshu' },
+    { id: 330106, name: '西湖区', parentId: 330100, level: 3, pinyin: 'xihu' },
+    { id: 330108, name: '滨江区', parentId: 330100, level: 3, pinyin: 'binjiang' },
+    { id: 330109, name: '萧山区', parentId: 330100, level: 3, pinyin: 'xiaoshan' },
+    { id: 330110, name: '余杭区', parentId: 330100, level: 3, pinyin: 'yuhang' },
+    { id: 330200, name: '宁波市', parentId: 330000, level: 2, pinyin: 'ningbo' },
+    { id: 330203, name: '海曙区', parentId: 330200, level: 3, pinyin: 'haishu' },
+    { id: 330205, name: '江北区', parentId: 330200, level: 3, pinyin: 'jiangbei' },
+    { id: 330212, name: '鄞州区', parentId: 330200, level: 3, pinyin: 'yinzhou' },
+    { id: 330300, name: '温州市', parentId: 330000, level: 2, pinyin: 'wenzhou' },
+    { id: 330302, name: '鹿城区', parentId: 330300, level: 3, pinyin: 'lucheng' },
+    { id: 330303, name: '龙湾区', parentId: 330300, level: 3, pinyin: 'longwan' },
 
-    // 湖北省
-    { id: 420000, name: '湖北省', parentId: null, level: 1, pinyin: 'hubei', lat: 30.5928, lng: 114.3055 },
-    { id: 420100, name: '武汉市', parentId: 420000, level: 2, pinyin: 'wuhan', lat: 30.5928, lng: 114.3055 },
-    { id: 420102, name: '江岸区', parentId: 420100, level: 3, pinyin: 'jiangan', lat: 30.6000, lng: 114.3093 },
-    { id: 420103, name: '江汉区', parentId: 420100, level: 3, pinyin: 'jianghan', lat: 30.6015, lng: 114.2706 },
-    { id: 420104, name: '硚口区', parentId: 420100, level: 3, pinyin: 'qiaokou', lat: 30.5767, lng: 114.2150 },
-    { id: 420105, name: '汉阳区', parentId: 420100, level: 3, pinyin: 'hanyang', lat: 30.5495, lng: 114.2190 },
-    { id: 420106, name: '武昌区', parentId: 420100, level: 3, pinyin: 'wuchang', lat: 30.5575, lng: 114.3160 },
+    // ========== 江苏省（完整）==========
+    { id: 320000, name: '江苏省', parentId: null, level: 1, pinyin: 'jiangsu' },
+    { id: 320100, name: '南京市', parentId: 320000, level: 2, pinyin: 'nanjing' },
+    { id: 320102, name: '玄武区', parentId: 320100, level: 3, pinyin: 'xuanwu' },
+    { id: 320104, name: '秦淮区', parentId: 320100, level: 3, pinyin: 'qinhuai' },
+    { id: 320105, name: '建邺区', parentId: 320100, level: 3, pinyin: 'jianye' },
+    { id: 320106, name: '鼓楼区', parentId: 320100, level: 3, pinyin: 'gulou' },
+    { id: 320115, name: '江宁区', parentId: 320100, level: 3, pinyin: 'jiangning' },
+    { id: 320500, name: '苏州市', parentId: 320000, level: 2, pinyin: 'suzhou' },
+    { id: 320505, name: '虎丘区', parentId: 320500, level: 3, pinyin: 'huqiu' },
+    { id: 320506, name: '吴中区', parentId: 320500, level: 3, pinyin: 'wuzhong' },
+    { id: 320508, name: '姑苏区', parentId: 320500, level: 3, pinyin: 'gusu' },
+    { id: 320509, name: '吴江区', parentId: 320500, level: 3, pinyin: 'wujiang' },
+    { id: 320583, name: '昆山市', parentId: 320500, level: 3, pinyin: 'kunshan' },
+    { id: 320200, name: '无锡市', parentId: 320000, level: 2, pinyin: 'wuxi' },
+    { id: 320211, name: '滨湖区', parentId: 320200, level: 3, pinyin: 'binhu' },
+    { id: 320213, name: '梁溪区', parentId: 320200, level: 3, pinyin: 'liangxi' },
+    { id: 320214, name: '新吴区', parentId: 320200, level: 3, pinyin: 'xinwu' },
+
+    // ========== 其他省份（只有省和主要城市）==========
+    // 河北省
+    { id: 130000, name: '河北省', parentId: null, level: 1, pinyin: 'hebei' },
+    { id: 130100, name: '石家庄市', parentId: 130000, level: 2, pinyin: 'shijiazhuang' },
+    { id: 130102, name: '长安区', parentId: 130100, level: 3, pinyin: 'changan' },
+
+    // 山西省
+    { id: 140000, name: '山西省', parentId: null, level: 1, pinyin: 'shanxi' },
+    { id: 140100, name: '太原市', parentId: 140000, level: 2, pinyin: 'taiyuan' },
+    { id: 140105, name: '小店区', parentId: 140100, level: 3, pinyin: 'xiaodian' },
+
+    // 内蒙古
+    { id: 150000, name: '内蒙古自治区', parentId: null, level: 1, pinyin: 'neimenggu' },
+    { id: 150100, name: '呼和浩特市', parentId: 150000, level: 2, pinyin: 'huhehaote' },
+    { id: 150102, name: '新城区', parentId: 150100, level: 3, pinyin: 'xincheng' },
+
+    // 辽宁省
+    { id: 210000, name: '辽宁省', parentId: null, level: 1, pinyin: 'liaoning' },
+    { id: 210100, name: '沈阳市', parentId: 210000, level: 2, pinyin: 'shenyang' },
+    { id: 210102, name: '和平区', parentId: 210100, level: 3, pinyin: 'heping' },
+    { id: 210200, name: '大连市', parentId: 210000, level: 2, pinyin: 'dalian' },
+    { id: 210202, name: '中山区', parentId: 210200, level: 3, pinyin: 'zhongshan' },
+
+    // 吉林省
+    { id: 220000, name: '吉林省', parentId: null, level: 1, pinyin: 'jilin' },
+    { id: 220100, name: '长春市', parentId: 220000, level: 2, pinyin: 'changchun' },
+    { id: 220102, name: '南关区', parentId: 220100, level: 3, pinyin: 'nanguan' },
+
+    // 黑龙江省
+    { id: 230000, name: '黑龙江省', parentId: null, level: 1, pinyin: 'heilongjiang' },
+    { id: 230100, name: '哈尔滨市', parentId: 230000, level: 2, pinyin: 'haerbin' },
+    { id: 230102, name: '道里区', parentId: 230100, level: 3, pinyin: 'daoli' },
+
+    // 安徽省
+    { id: 340000, name: '安徽省', parentId: null, level: 1, pinyin: 'anhui' },
+    { id: 340100, name: '合肥市', parentId: 340000, level: 2, pinyin: 'hefei' },
+    { id: 340102, name: '瑶海区', parentId: 340100, level: 3, pinyin: 'yaohai' },
+
+    // 福建省
+    { id: 350000, name: '福建省', parentId: null, level: 1, pinyin: 'fujian' },
+    { id: 350100, name: '福州市', parentId: 350000, level: 2, pinyin: 'fuzhou' },
+    { id: 350102, name: '鼓楼区', parentId: 350100, level: 3, pinyin: 'gulou' },
+    { id: 350200, name: '厦门市', parentId: 350000, level: 2, pinyin: 'xiamen' },
+    { id: 350203, name: '思明区', parentId: 350200, level: 3, pinyin: 'siming' },
+
+    // 江西省
+    { id: 360000, name: '江西省', parentId: null, level: 1, pinyin: 'jiangxi' },
+    { id: 360100, name: '南昌市', parentId: 360000, level: 2, pinyin: 'nanchang' },
+    { id: 360102, name: '东湖区', parentId: 360100, level: 3, pinyin: 'donghu' },
 
     // 山东省
-    { id: 370000, name: '山东省', parentId: null, level: 1, pinyin: 'shandong', lat: 36.6683, lng: 117.0204 },
-    { id: 370100, name: '济南市', parentId: 370000, level: 2, pinyin: 'jinan', lat: 36.6683, lng: 117.0204 },
-    { id: 370102, name: '历下区', parentId: 370100, level: 3, pinyin: 'lixia', lat: 36.6667, lng: 117.0768 },
-    { id: 370103, name: '市中区', parentId: 370100, level: 3, pinyin: 'shizhong', lat: 36.6512, lng: 116.9972 },
-    { id: 370104, name: '槐荫区', parentId: 370100, level: 3, pinyin: 'huaiyin', lat: 36.6516, lng: 116.9010 },
-    { id: 370105, name: '天桥区', parentId: 370100, level: 3, pinyin: 'tianqiao', lat: 36.6780, lng: 116.9870 },
-    { id: 370200, name: '青岛市', parentId: 370000, level: 2, pinyin: 'qingdao', lat: 36.0671, lng: 120.3826 },
-    { id: 370202, name: '市南区', parentId: 370200, level: 3, pinyin: 'shinan', lat: 36.0755, lng: 120.3950 },
-    { id: 370203, name: '市北区', parentId: 370200, level: 3, pinyin: 'shibei', lat: 36.0872, lng: 120.3748 },
-    { id: 370211, name: '黄岛区', parentId: 370200, level: 3, pinyin: 'huangdao', lat: 35.9603, lng: 120.1980 },
-    { id: 370212, name: '崂山区', parentId: 370200, level: 3, pinyin: 'laoshan', lat: 36.1073, lng: 120.4680 },
+    { id: 370000, name: '山东省', parentId: null, level: 1, pinyin: 'shandong' },
+    { id: 370100, name: '济南市', parentId: 370000, level: 2, pinyin: 'jinan' },
+    { id: 370102, name: '历下区', parentId: 370100, level: 3, pinyin: 'lixia' },
+    { id: 370200, name: '青岛市', parentId: 370000, level: 2, pinyin: 'qingdao' },
+    { id: 370202, name: '市南区', parentId: 370200, level: 3, pinyin: 'shinan' },
 
     // 河南省
-    { id: 410000, name: '河南省', parentId: null, level: 1, pinyin: 'henan', lat: 34.7466, lng: 113.6254 },
-    { id: 410100, name: '郑州市', parentId: 410000, level: 2, pinyin: 'zhengzhou', lat: 34.7466, lng: 113.6254 },
-    { id: 410102, name: '中原区', parentId: 410100, level: 3, pinyin: 'zhongyuan', lat: 34.7482, lng: 113.6130 },
-    { id: 410103, name: '二七区', parentId: 410100, level: 3, pinyin: 'erqi', lat: 34.7263, lng: 113.6400 },
-    { id: 410104, name: '管城回族区', parentId: 410100, level: 3, pinyin: 'guancheng', lat: 34.7538, lng: 113.6770 },
-    { id: 410105, name: '金水区', parentId: 410100, level: 3, pinyin: 'jinshui', lat: 34.8002, lng: 113.6605 },
+    { id: 410000, name: '河南省', parentId: null, level: 1, pinyin: 'henan' },
+    { id: 410100, name: '郑州市', parentId: 410000, level: 2, pinyin: 'zhengzhou' },
+    { id: 410102, name: '中原区', parentId: 410100, level: 3, pinyin: 'zhongyuan' },
 
-    // 天津市
-    { id: 120000, name: '天津市', parentId: null, level: 1, pinyin: 'tianjin', lat: 39.0842, lng: 117.2009 },
-    { id: 120100, name: '天津市', parentId: 120000, level: 2, pinyin: 'tianjin', lat: 39.0842, lng: 117.2009 },
-    { id: 120101, name: '和平区', parentId: 120100, level: 3, pinyin: 'heping', lat: 39.1172, lng: 117.2149 },
-    { id: 120102, name: '河东区', parentId: 120100, level: 3, pinyin: 'hedong', lat: 39.1283, lng: 117.2523 },
-    { id: 120103, name: '河西区', parentId: 120100, level: 3, pinyin: 'hexi', lat: 39.1094, lng: 117.2233 },
-    { id: 120104, name: '南开区', parentId: 120100, level: 3, pinyin: 'nankai', lat: 39.1381, lng: 117.1506 },
-    { id: 120105, name: '河北区', parentId: 120100, level: 3, pinyin: 'hebei', lat: 39.1479, lng: 117.1963 },
+    // 湖北省
+    { id: 420000, name: '湖北省', parentId: null, level: 1, pinyin: 'hubei' },
+    { id: 420100, name: '武汉市', parentId: 420000, level: 2, pinyin: 'wuhan' },
+    { id: 420102, name: '江岸区', parentId: 420100, level: 3, pinyin: 'jiangan' },
+    { id: 420106, name: '武昌区', parentId: 420100, level: 3, pinyin: 'wuchang' },
 
-    // 重庆市
-    { id: 500000, name: '重庆市', parentId: null, level: 1, pinyin: 'chongqing', lat: 29.5630, lng: 106.5516 },
-    { id: 500100, name: '重庆市', parentId: 500000, level: 2, pinyin: 'chongqing', lat: 29.5630, lng: 106.5516 },
-    { id: 500101, name: '万州区', parentId: 500100, level: 3, pinyin: 'wanzhou', lat: 30.8078, lng: 108.4089 },
-    { id: 500103, name: '渝中区', parentId: 500100, level: 3, pinyin: 'yuzhong', lat: 29.5528, lng: 106.5690 },
-    { id: 500104, name: '大渡口区', parentId: 500100, level: 3, pinyin: 'dadukou', lat: 29.4843, lng: 106.4826 },
-    { id: 500105, name: '江北区', parentId: 500100, level: 3, pinyin: 'jiangbei', lat: 29.6066, lng: 106.5740 },
-    { id: 500106, name: '沙坪坝区', parentId: 500100, level: 3, pinyin: 'shapingba', lat: 29.5411, lng: 106.4542 },
-    { id: 500107, name: '九龙坡区', parentId: 500100, level: 3, pinyin: 'jiulongpo', lat: 29.5020, lng: 106.5107 },
-    { id: 500108, name: '南岸区', parentId: 500100, level: 3, pinyin: 'nanan', lat: 29.5230, lng: 106.5635 },
+    // 湖南省
+    { id: 430000, name: '湖南省', parentId: null, level: 1, pinyin: 'hunan' },
+    { id: 430100, name: '长沙市', parentId: 430000, level: 2, pinyin: 'changsha' },
+    { id: 430102, name: '芙蓉区', parentId: 430100, level: 3, pinyin: 'furong' },
+
+    // 广西
+    { id: 450000, name: '广西壮族自治区', parentId: null, level: 1, pinyin: 'guangxi' },
+    { id: 450100, name: '南宁市', parentId: 450000, level: 2, pinyin: 'nanning' },
+    { id: 450102, name: '兴宁区', parentId: 450100, level: 3, pinyin: 'xingning' },
+
+    // 海南省
+    { id: 460000, name: '海南省', parentId: null, level: 1, pinyin: 'hainan' },
+    { id: 460100, name: '海口市', parentId: 460000, level: 2, pinyin: 'haikou' },
+    { id: 460105, name: '秀英区', parentId: 460100, level: 3, pinyin: 'xiuying' },
+    { id: 460200, name: '三亚市', parentId: 460000, level: 2, pinyin: 'sanya' },
+    { id: 460202, name: '海棠区', parentId: 460200, level: 3, pinyin: 'haitang' },
+
+    // 四川省
+    { id: 510000, name: '四川省', parentId: null, level: 1, pinyin: 'sichuan' },
+    { id: 510100, name: '成都市', parentId: 510000, level: 2, pinyin: 'chengdu' },
+    { id: 510104, name: '锦江区', parentId: 510100, level: 3, pinyin: 'jinjiang' },
+    { id: 510107, name: '武侯区', parentId: 510100, level: 3, pinyin: 'wuhou' },
+
+    // 贵州省
+    { id: 520000, name: '贵州省', parentId: null, level: 1, pinyin: 'guizhou' },
+    { id: 520100, name: '贵阳市', parentId: 520000, level: 2, pinyin: 'guiyang' },
+    { id: 520102, name: '南明区', parentId: 520100, level: 3, pinyin: 'nanming' },
+
+    // 云南省
+    { id: 530000, name: '云南省', parentId: null, level: 1, pinyin: 'yunnan' },
+    { id: 530100, name: '昆明市', parentId: 530000, level: 2, pinyin: 'kunming' },
+    { id: 530102, name: '五华区', parentId: 530100, level: 3, pinyin: 'wuhua' },
+
+    // 西藏
+    { id: 540000, name: '西藏自治区', parentId: null, level: 1, pinyin: 'xizang' },
+    { id: 540100, name: '拉萨市', parentId: 540000, level: 2, pinyin: 'lasa' },
+    { id: 540102, name: '城关区', parentId: 540100, level: 3, pinyin: 'chengguan' },
+
+    // 陕西省
+    { id: 610000, name: '陕西省', parentId: null, level: 1, pinyin: 'shaanxi' },
+    { id: 610100, name: '西安市', parentId: 610000, level: 2, pinyin: 'xian' },
+    { id: 610102, name: '新城区', parentId: 610100, level: 3, pinyin: 'xincheng' },
+    { id: 610103, name: '碑林区', parentId: 610100, level: 3, pinyin: 'beilin' },
+
+    // 甘肃省
+    { id: 620000, name: '甘肃省', parentId: null, level: 1, pinyin: 'gansu' },
+    { id: 620100, name: '兰州市', parentId: 620000, level: 2, pinyin: 'lanzhou' },
+    { id: 620102, name: '城关区', parentId: 620100, level: 3, pinyin: 'chengguan' },
+
+    // 青海省
+    { id: 630000, name: '青海省', parentId: null, level: 1, pinyin: 'qinghai' },
+    { id: 630100, name: '西宁市', parentId: 630000, level: 2, pinyin: 'xining' },
+    { id: 630102, name: '城东区', parentId: 630100, level: 3, pinyin: 'chengdong' },
+
+    // 宁夏
+    { id: 640000, name: '宁夏回族自治区', parentId: null, level: 1, pinyin: 'ningxia' },
+    { id: 640100, name: '银川市', parentId: 640000, level: 2, pinyin: 'yinchuan' },
+    { id: 640104, name: '兴庆区', parentId: 640100, level: 3, pinyin: 'xingqing' },
+
+    // 新疆
+    { id: 650000, name: '新疆维吾尔自治区', parentId: null, level: 1, pinyin: 'xinjiang' },
+    { id: 650100, name: '乌鲁木齐市', parentId: 650000, level: 2, pinyin: 'wulumuqi' },
+    { id: 650102, name: '天山区', parentId: 650100, level: 3, pinyin: 'tianshan' },
+
+    // 香港
+    { id: 810000, name: '香港特别行政区', parentId: null, level: 1, pinyin: 'xianggang' },
+    { id: 810100, name: '香港岛', parentId: 810000, level: 2, pinyin: 'xianggangdao' },
+    { id: 810101, name: '中西区', parentId: 810100, level: 3, pinyin: 'zhongxi' },
+
+    // 澳门
+    { id: 820000, name: '澳门特别行政区', parentId: null, level: 1, pinyin: 'aomen' },
+    { id: 820100, name: '澳门半岛', parentId: 820000, level: 2, pinyin: 'aomenbandao' },
+    { id: 820101, name: '花地玛堂区', parentId: 820100, level: 3, pinyin: 'huadimatang' },
+
+    // 台湾
+    { id: 710000, name: '台湾省', parentId: null, level: 1, pinyin: 'taiwan' },
+    { id: 710100, name: '台北市', parentId: 710000, level: 2, pinyin: 'taibei' },
+    { id: 710101, name: '中正区', parentId: 710100, level: 3, pinyin: 'zhongzheng' },
 ]
 
 async function seedRegions() {
@@ -133,21 +276,31 @@ async function seedRegions() {
     // 批量插入
     for (const region of regionsData) {
         await prisma.region.create({
-            data: region,
+            data: {
+                id: region.id,
+                name: region.name,
+                parentId: region.parentId,
+                level: region.level,
+                pinyin: region.pinyin,
+                status: 1,
+            },
         })
     }
 
     console.log(`✅ 成功导入 ${regionsData.length} 条行政区划数据`)
 }
 
-// 如果直接运行此文件
-seedRegions()
-    .catch((e) => {
-        console.error('❌ 导入失败:', e)
-        process.exit(1)
-    })
-    .finally(async () => {
-        await prisma.$disconnect()
-    })
-
+// 导出供 seed.ts 调用
 export { seedRegions }
+
+// 如果直接运行此文件
+if (require.main === module) {
+    seedRegions()
+        .catch((e) => {
+            console.error('❌ 导入失败:', e)
+            process.exit(1)
+        })
+        .finally(async () => {
+            await prisma.$disconnect()
+        })
+}

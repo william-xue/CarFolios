@@ -1,5 +1,6 @@
 import { PrismaClient } from '@prisma/client'
 import * as bcrypt from 'bcryptjs'
+import { seedRegions } from './seed-regions'
 
 const prisma = new PrismaClient()
 
@@ -72,6 +73,10 @@ function generateOrderNo(): string {
 
 async function main() {
     console.log('🌱 开始初始化数据...')
+
+    // 导入省市区数据
+    await seedRegions()
+
 
     // 创建管理员
     const adminPassword = await bcrypt.hash('123456', 10)

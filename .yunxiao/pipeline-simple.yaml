@@ -103,6 +103,18 @@ stages:
                 echo "=========================================="
                 echo "  构建完成 ✓"
                 echo "=========================================="
+          upload_step:
+            name: "构建物上传"
+            step: ArtifactUpload
+            with:
+              artifact: Artifacts_${PIPELINE_ID}
+              includePathInArtifact: false
+              repo: flow_generic_repo
+              filePath:
+                - carfolios-build.tgz
+              uploadType: packages
+              version: ${BUILD_NUMBER}
+              serviceConnection: ys3g4fzsk8igfsc5
 
   # ==================== 阶段2: 部署 ====================
   deploy_stage:
@@ -112,14 +124,15 @@ stages:
         name: "主机部署"
         component: "VMDeploy"
         with:
-          downloadArtifact: false
-          useEncode: false
-          machineGroup: "iKYG4O6eqX48yNCK"  
-          executeUser: "root"
-          # 使用 SCP 传输构建物
+          # 从制品库下载构建物
+          downloadArtifact: true
+          artifactDownloadPath: /home/admin/app
+          # 上传到目标机器
           upload:
-            - source: "carfolios-build.tgz"
-              target: "/home/admin/app/"
+            - source: carfolios-build.tgz
+              target: /home/admin/app/
+          machineGroup: "iKYG4O6eqX48yNCK"
+          executeUser: "root"
           run: |
             #!/bin/bash
             set -e
@@ -133,6 +146,11 @@ stages:
             echo "  CarFolios 部署开始"
             echo "  时间: $(date '+%Y-%m-%d %H:%M:%S')"
             echo "=========================================="
+            
+            # 检查构建物是否存在
+            echo ""
+            echo ">>> 检查构建物..."
+            ls -la $ARTIFACT_PATH/
             
             # 解压构建物
             echo ""

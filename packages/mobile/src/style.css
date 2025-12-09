@@ -14,15 +14,51 @@ body,
 }
 
 :root {
+    /* 主色 */
     --primary-color: #1989fa;
+    --primary-gradient: linear-gradient(135deg, #1989fa 0%, #0066cc 100%);
+
+    /* 状态色 */
     --success-color: #07c160;
     --warning-color: #ff976a;
     --danger-color: #ee0a24;
+
+    /* 文字色 */
     --text-color: #323233;
     --text-color-2: #969799;
     --text-color-3: #c8c9cc;
+
+    /* 边框和背景 */
     --border-color: #ebedf0;
     --background-color: #f7f8fa;
+
+    /* 渐变色 - 服务卡片 */
+    --gradient-purple: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    --gradient-pink: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    --gradient-blue: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+    --gradient-green: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+
+    /* Hero 遮罩 */
+    --hero-overlay: linear-gradient(135deg,
+            rgba(10, 20, 40, 0.85) 0%,
+            rgba(20, 40, 80, 0.75) 50%,
+            rgba(15, 52, 96, 0.8) 100%);
+
+    /* 间距 */
+    --spacing-xs: 4px;
+    --spacing-sm: 8px;
+    --spacing-md: 12px;
+    --spacing-lg: 16px;
+    --spacing-xl: 24px;
+
+    /* 圆角 */
+    --radius-sm: 8px;
+    --radius-md: 12px;
+    --radius-lg: 16px;
+
+    /* 阴影 */
+    --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.08);
+    --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.12);
 }
 
 .page {
