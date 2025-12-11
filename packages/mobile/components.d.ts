@@ -7,6 +7,8 @@ export {}
 /* prettier-ignore */
 declare module 'vue' {
   export interface GlobalComponents {
+    AccessiblePriceInput: typeof import('./src/components/AccessiblePriceInput.vue')['default']
+    AddressInput: typeof import('./src/components/AddressInput.vue')['default']
     BrandGrid: typeof import('./src/components/BrandGrid.vue')['default']
     CarListTabs: typeof import('./src/components/CarListTabs.vue')['default']
     FeatureCards: typeof import('./src/components/FeatureCards.vue')['default']
@@ -39,5 +41,6 @@ declare module 'vue' {
     VanTabbarItem: typeof import('vant/es')['TabbarItem']
     VanTag: typeof import('vant/es')['Tag']
     VanUploader: typeof import('vant/es')['Uploader']
+    VideoUploader: typeof import('./src/components/VideoUploader.vue')['default']
   }
 }

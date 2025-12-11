@@ -100,11 +100,28 @@ function handleClick() {
     border-radius: $border-radius-md;
     overflow: hidden;
     cursor: pointer;
-    transition: box-shadow 0.2s, transform 0.2s;
+    transition: box-shadow 0.28s ease, transform 0.28s ease, filter 0.28s ease;
+    will-change: transform, box-shadow;
+    border: 1px solid $border-color-lighter;
+    box-shadow: $box-shadow-sm;
+    transform: translateZ(0);
 
     &:hover {
+        box-shadow: $box-shadow-lg;
+        transform: translateY(-6px) scale(1.01);
+        filter: brightness(1.03);
+    }
+
+    &:focus-visible {
+        outline: none;
+        box-shadow: 0 0 0 3px rgba(25, 137, 250, 0.25), $box-shadow-lg;
+        transform: translateY(-4px) scale(1.005);
+    }
+
+    &:active {
+        transform: translateY(-2px) scale(0.997);
         box-shadow: $box-shadow-md;
-        transform: translateY(-2px);
+        filter: brightness(1);
     }
 }
 
@@ -119,6 +136,7 @@ function handleClick() {
     left: 0;
     width: 100%;
     height: 100%;
+    transition: transform 0.35s ease;
 }
 
 .image-placeholder {
@@ -130,6 +148,12 @@ function handleClick() {
     background: $bg-color;
     color: $text-placeholder;
     font-size: 32px;
+}
+
+// 图片轻度缩放动效
+.car-card:hover .car-image,
+.car-card:focus-visible .car-image {
+    transform: scale(1.03);
 }
 
 .status-tag {
@@ -154,6 +178,7 @@ function handleClick() {
     line-height: 1.4;
     margin-bottom: 8px;
     height: 40px;
+    transition: color 0.25s ease;
 }
 
 .car-tags {
@@ -178,5 +203,11 @@ function handleClick() {
 .car-city {
     font-size: 12px;
     color: $text-secondary;
+}
+
+// 文本轻度高亮
+.car-card:hover .car-title,
+.car-card:focus-visible .car-title {
+    color: $text-primary;
 }
 </style>

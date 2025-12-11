@@ -16,8 +16,12 @@ const showLoginModal = ref(false)
 const searchKeyword = ref('')
 
 function handleSearch() {
-  if (searchKeyword.value.trim()) {
-    router.push({ name: 'Search', query: { keyword: searchKeyword.value } })
+  const keyword = searchKeyword.value.trim()
+  if (keyword) {
+    router.push({ name: 'Search', query: { keyword } })
+  } else {
+    // 空搜索也跳转到搜索页面，显示所有车源
+    router.push({ name: 'Search' })
   }
 }
 

@@ -6,8 +6,12 @@ import { ElMessage } from 'element-plus'
 import type { FormInstance, FormRules } from 'element-plus'
 import LocationSelector from '@/components/LocationSelector.vue'
 import ImageUploader from '@/components/ImageUploader.vue'
+import VideoUploader from '@/components/VideoUploader.vue'
+import AddressInput from '@/components/AddressInput.vue'
 import { validateVin, validatePrice, validateMileage } from '@/utils'
 import { useLocale } from '@/composables/useLocale'
+import type { ImageItem } from '@/types'
+import { CAR_CONFIG_OPTIONS, USE_TYPE_OPTIONS, EMISSION_STANDARD_OPTIONS } from '@/types'
 
 const { t } = useLocale()
 const router = useRouter()
@@ -19,26 +23,41 @@ const submitting = ref(false)
 
 // 表单数据
 const formData = reactive({
-    // 基本信息
-    brandId: null as number | null,
-    seriesId: null as number | null,
-    title: '',
-    price: null as number | null,
-    // 车况信息
-    firstRegDate: '',
-    mileage: null as number | null,
-    gearbox: '',
-    fuelType: '',
-    displacement: null as number | null,
-    color: '',
-    vin: '',
-    // 地理位置
-    location: [] as string[],
-    // 图片
-    images: [] as string[],
-    // 描述
-    description: '',
+  // 基本信息
+  brandId: null as number | null,
+  seriesId: null as number | null,
+  title: '',
+  price: null as number | null,
+  originalPrice: null as number | null,
+  // 车况信息
+  firstRegDate: '',
+  mileage: null as number | null,
+  gearbox: '',
+  fuelType: '',
+  displacement: null as number | null,
+  color: '',
+  vin: '',
+  plateNumber: '',
+  emissionStandard: '',
+  useType: '',
+  transferCount: 0,
+  configs: [] as string[],
+  // 地理位置
+  location: [] as string[],
+  address: '',
+  // 图片和视频
+  images: [] as ImageItem[],
+  video: '',
+  videoThumbnail: '',
+  // 描述
+  description: '',
+  // 联系方式
+  contactPhone: '',
+  usePlatformPhone: false,
 })
+
+// 图片上传组件引用
+const imageUploaderRef = ref<InstanceType<typeof ImageUploader>>()
 
 // 表单验证规则
 const rules: FormRules = {
@@ -87,8 +106,14 @@ const rules: FormRules = {
     images: [
         { required: true, message: '请上传车辆图片', trigger: 'change' },
         {
-            validator: (_rule, value, callback) => {
+            validator: (_rule, value: ImageItem[], callback) => {
                 if (!value || value.length === 0) {
+                    callback(new Error('请至少上传一张图片'))
+                    return
+                }
+                // 检查是否有有效图片（排除已删除和失败的）
+                const validImages = value.filter(img => img.status === 'done' || img.status === 'existing')
+                if (validImages.length === 0) {
                     callback(new Error('请至少上传一张图片'))
                 } else {
                     callback()
@@ -117,12 +142,21 @@ const gearboxOptions = computed(() => [
 
 // 燃料类型选项
 const fuelTypeOptions = computed(() => [
-    { label: t('car.fuel.gasoline'), value: 'gasoline' },
-    { label: t('car.fuel.diesel'), value: 'diesel' },
-    { label: t('car.fuel.electric'), value: 'electric' },
-    { label: t('car.fuel.hybrid'), value: 'hybrid' },
-    { label: t('car.fuel.phev'), value: 'phev' },
+  { label: t('car.fuel.gasoline'), value: 'gasoline' },
+  { label: t('car.fuel.diesel'), value: 'diesel' },
+  { label: t('car.fuel.electric'), value: 'electric' },
+  { label: t('car.fuel.hybrid'), value: 'hybrid' },
+  { label: t('car.fuel.phev'), value: 'phev' },
 ])
+
+// 排放标准选项
+const emissionOptions = EMISSION_STANDARD_OPTIONS
+
+// 使用性质选项
+const useTypeOptions = USE_TYPE_OPTIONS
+
+// 车辆配置选项
+const configOptions = CAR_CONFIG_OPTIONS
 
 // 品牌变化时清空车系
 function handleBrandChange() {
@@ -176,36 +210,51 @@ async function handleSubmit() {
         return
     }
 
-    submitting.value = true
-    try {
-        const submitData = {
-            brandId: formData.brandId,
-            seriesId: formData.seriesId,
-            title: formData.title,
-            price: formData.price,
-            firstRegDate: formData.firstRegDate,
-            mileage: formData.mileage,
-            gearbox: formData.gearbox,
-            fuelType: formData.fuelType || undefined,
-            displacement: formData.displacement || undefined,
-            color: formData.color || undefined,
-            vin: formData.vin || undefined,
-            provinceCode: formData.location[0] || undefined,
-            cityCode: formData.location[1] || undefined,
-            districtCode: formData.location[2] || undefined,
-            images: formData.images,
-            coverImage: formData.images[0],
-            description: formData.description || undefined,
-        }
-
-        await carStore.createCar(submitData)
-        ElMessage.success(t('publish.success'))
-        router.push('/my-cars')
-    } catch (error: any) {
-        ElMessage.error(error.message || t('message.operationFailed'))
-    } finally {
-        submitting.value = false
+  submitting.value = true
+  try {
+    // 从图片管理器获取图片 URL
+    const imageUrls = imageUploaderRef.value?.getSubmitData?.()?.all || 
+      formData.images.filter(img => img.status === 'done' || img.status === 'existing').map(img => img.url)
+    
+    const submitData = {
+      brandId: formData.brandId,
+      seriesId: formData.seriesId,
+      title: formData.title,
+      price: formData.price,
+      originalPrice: formData.originalPrice || undefined,
+      firstRegDate: formData.firstRegDate,
+      mileage: formData.mileage,
+      gearbox: formData.gearbox,
+      fuelType: formData.fuelType || undefined,
+      displacement: formData.displacement || undefined,
+      color: formData.color || undefined,
+      vin: formData.vin || undefined,
+      plateNumber: formData.plateNumber || undefined,
+      emissionStandard: formData.emissionStandard || undefined,
+      useType: formData.useType || undefined,
+      transferCount: formData.transferCount || 0,
+      configs: formData.configs.length > 0 ? formData.configs : undefined,
+      provinceCode: formData.location[0] || undefined,
+      cityCode: formData.location[1] || undefined,
+      districtCode: formData.location[2] || undefined,
+      address: formData.address || undefined,
+      images: imageUrls,
+      coverImage: imageUrls[0],
+      video: formData.video || undefined,
+      videoThumbnail: formData.videoThumbnail || undefined,
+      description: formData.description || undefined,
+      contactPhone: formData.usePlatformPhone ? undefined : formData.contactPhone,
+      usePlatformPhone: formData.usePlatformPhone,
     }
+
+    await carStore.createCar(submitData)
+    ElMessage.success(t('publish.success'))
+    router.push('/my-cars')
+  } catch (error: any) {
+    ElMessage.error(error.message || t('message.operationFailed'))
+  } finally {
+    submitting.value = false
+  }
 }
 
 onMounted(() => {
@@ -285,6 +334,17 @@ onMounted(() => {
                             />
                             <span class="form-unit">元</span>
                         </el-form-item>
+                        <el-form-item label="新车指导价">
+                            <el-input-number
+                                v-model="formData.originalPrice"
+                                :min="0"
+                                :max="99999999"
+                                :precision="0"
+                                placeholder="选填"
+                                style="width: 200px"
+                            />
+                            <span class="form-unit">元</span>
+                        </el-form-item>
                     </div>
 
                     <!-- 步骤2：车况信息 -->
@@ -359,15 +419,74 @@ onMounted(() => {
                                 style="width: 300px"
                             />
                         </el-form-item>
+                        <el-form-item label="车牌号">
+                            <el-input
+                                v-model="formData.plateNumber"
+                                placeholder="如：京A12345（选填）"
+                                style="width: 200px"
+                            />
+                        </el-form-item>
+                        <el-form-item label="排放标准">
+                            <el-select v-model="formData.emissionStandard" placeholder="请选择" style="width: 200px">
+                                <el-option
+                                    v-for="opt in emissionOptions"
+                                    :key="opt.value"
+                                    :label="opt.label"
+                                    :value="opt.value"
+                                />
+                            </el-select>
+                        </el-form-item>
+                        <el-form-item label="使用性质">
+                            <el-select v-model="formData.useType" placeholder="请选择" style="width: 200px">
+                                <el-option
+                                    v-for="opt in useTypeOptions"
+                                    :key="opt.value"
+                                    :label="opt.label"
+                                    :value="opt.value"
+                                />
+                            </el-select>
+                        </el-form-item>
+                        <el-form-item label="过户次数">
+                            <el-input-number
+                                v-model="formData.transferCount"
+                                :min="0"
+                                :max="99"
+                                :precision="0"
+                                style="width: 120px"
+                            />
+                            <span class="form-unit">次</span>
+                        </el-form-item>
+                        <el-form-item label="车辆配置">
+                            <el-checkbox-group v-model="formData.configs">
+                                <el-checkbox
+                                    v-for="opt in configOptions"
+                                    :key="opt.value"
+                                    :value="opt.value"
+                                >
+                                    {{ opt.label }}
+                                </el-checkbox>
+                            </el-checkbox-group>
+                        </el-form-item>
                         <el-form-item label="车辆所在地" prop="location">
                             <LocationSelector v-model="formData.location" />
                         </el-form-item>
+                        <el-form-item label="详细地址">
+                            <AddressInput v-model="formData.address" placeholder="请输入详细地址（选填）" style="width: 400px" />
+                        </el-form-item>
                     </div>
 
-                    <!-- 步骤3：图片上传 -->
+                    <!-- 步骤3：图片视频 -->
                     <div v-show="currentStep === 2" class="step-content">
                         <el-form-item label="车辆图片" prop="images">
-                            <ImageUploader v-model="formData.images" :limit="9" />
+                            <ImageUploader ref="imageUploaderRef" v-model="formData.images" :limit="9" />
+                        </el-form-item>
+                        <el-form-item label="车辆视频">
+                            <VideoUploader
+                                v-model="formData.video"
+                                :thumbnail="formData.videoThumbnail"
+                                @update:thumbnail="formData.videoThumbnail = $event"
+                            />
+                            <div class="form-tip">上传车辆介绍视频，让买家更直观了解车况（选填）</div>
                         </el-form-item>
                         <el-form-item label="车辆描述">
                             <el-input
@@ -379,6 +498,27 @@ onMounted(() => {
                                 show-word-limit
                             />
                         </el-form-item>
+                        <el-divider>联系方式</el-divider>
+                        <el-form-item label="联系方式">
+                            <el-checkbox v-model="formData.usePlatformPhone">
+                                使用平台销售电话（保护个人隐私）
+                            </el-checkbox>
+                        </el-form-item>
+                        <el-form-item v-if="!formData.usePlatformPhone" label="联系电话">
+                            <el-input
+                                v-model="formData.contactPhone"
+                                placeholder="请输入联系电话"
+                                maxlength="11"
+                                style="width: 200px"
+                            />
+                        </el-form-item>
+                        <el-alert
+                            v-if="formData.usePlatformPhone"
+                            title="选择此选项后，买家将通过平台客服联系您，保护您的个人隐私"
+                            type="info"
+                            :closable="false"
+                            show-icon
+                        />
                     </div>
 
                     <!-- 步骤4：确认发布 -->
@@ -421,50 +561,176 @@ onMounted(() => {
 </template>
 
 <style lang="scss" scoped>
+/* 页面容器 */
 .publish-page {
-    background: $bg-color-page;
+    background: linear-gradient(180deg, #f0f5ff 0%, #f5f7fa 100%);
     min-height: calc(100vh - $header-height - 100px);
+    padding: 24px 16px;
 }
 
+/* 内容容器 */
+.page-container {
+    max-width: 900px;
+    margin: 0 auto;
+}
+
+/* 发布卡片 - 居中布局 */
 .publish-card {
     max-width: 800px;
     margin: 0 auto;
-    padding: 32px;
+    padding: 40px 48px;
+    border-radius: 16px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
 }
 
+/* 页面标题 */
 .page-title {
-    font-size: 24px;
+    font-size: 26px;
     font-weight: 600;
     text-align: center;
-    margin-bottom: 32px;
+    margin-bottom: 36px;
+    color: #303133;
 }
 
+/* 步骤条样式优化 */
 .publish-steps {
-    margin-bottom: 32px;
-}
-
-.step-content {
-    min-height: 300px;
-}
-
-.form-unit {
-    margin-left: 8px;
-    color: $text-secondary;
-}
-
-.preview-section {
-    h3 {
-        font-size: 16px;
-        margin-bottom: 16px;
+    margin-bottom: 40px;
+    padding: 0 20px;
+    
+    :deep(.el-step__title) {
+        font-size: 14px;
+        font-weight: 500;
+    }
+    
+    :deep(.el-step__head.is-finish) {
+        color: #409eff;
+        border-color: #409eff;
+    }
+    
+    :deep(.el-step__title.is-finish) {
+        color: #409eff;
     }
 }
 
+/* 表单样式 */
+.publish-form {
+    :deep(.el-form-item) {
+        margin-bottom: 24px;
+    }
+    
+    :deep(.el-form-item__label) {
+        font-weight: 500;
+        color: #606266;
+    }
+    
+    :deep(.el-input),
+    :deep(.el-select) {
+        width: 100%;
+        max-width: 400px;
+    }
+}
+
+/* 步骤内容区域 */
+.step-content {
+    min-height: 320px;
+    padding: 8px 0;
+}
+
+/* 单位文本 */
+.form-unit {
+  margin-left: 12px;
+  color: $text-secondary;
+  font-size: 14px;
+}
+
+/* 表单提示 */
+.form-tip {
+  font-size: 12px;
+  color: #909399;
+  margin-top: 8px;
+}
+
+/* 预览区域 */
+.preview-section {
+    h3 {
+        font-size: 18px;
+        font-weight: 600;
+        margin-bottom: 20px;
+        color: #303133;
+    }
+    
+    :deep(.el-descriptions) {
+        margin-top: 16px;
+    }
+    
+    :deep(.el-descriptions__label) {
+        font-weight: 500;
+        background: #fafafa;
+    }
+}
+
+/* 操作按钮区域 */
 .form-actions {
     display: flex;
     justify-content: center;
-    gap: 16px;
-    margin-top: 32px;
-    padding-top: 24px;
-    border-top: 1px solid $border-color-lighter;
+    gap: 20px;
+    margin-top: 40px;
+    padding-top: 32px;
+    border-top: 1px solid #ebeef5;
+    
+    .el-button {
+        min-width: 140px;
+        height: 44px;
+        font-size: 15px;
+        border-radius: 8px;
+    }
+}
+
+/* 响应式适配 */
+@media (max-width: 768px) {
+    .publish-page {
+        padding: 16px 12px;
+    }
+    
+    .publish-card {
+        padding: 24px 20px;
+        border-radius: 12px;
+    }
+    
+    .page-title {
+        font-size: 22px;
+        margin-bottom: 24px;
+    }
+    
+    .publish-steps {
+        padding: 0;
+        margin-bottom: 28px;
+        
+        :deep(.el-step__title) {
+            font-size: 12px;
+        }
+    }
+    
+    .publish-form {
+        :deep(.el-form-item__label) {
+            width: 80px !important;
+        }
+        
+        :deep(.el-input),
+        :deep(.el-select),
+        :deep(.el-input-number) {
+            width: 100% !important;
+            max-width: none;
+        }
+    }
+    
+    .form-actions {
+        flex-direction: column;
+        gap: 12px;
+        
+        .el-button {
+            width: 100%;
+        }
+    }
 }
 </style>

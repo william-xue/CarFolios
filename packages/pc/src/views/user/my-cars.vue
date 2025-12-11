@@ -243,6 +243,25 @@ onMounted(() => {
     gap: 16px;
     padding: 16px;
     margin-bottom: 16px;
+    background: #fff;
+    border-radius: $border-radius-md;
+    border: 1px solid $border-color-lighter;
+    transition: all 0.28s ease;
+    will-change: transform, box-shadow;
+    
+    &:hover {
+        transform: translateY(-3px);
+        box-shadow: $box-shadow-md;
+        border-color: rgba($primary-color, 0.2);
+        
+        .car-image {
+            transform: scale(1.03);
+        }
+        
+        .car-title {
+            color: $primary-color;
+        }
+    }
 }
 
 .car-image-wrapper {
@@ -256,6 +275,7 @@ onMounted(() => {
 .car-image {
     width: 100%;
     height: 100%;
+    transition: transform 0.3s ease;
 }
 
 .image-placeholder {
@@ -286,21 +306,26 @@ onMounted(() => {
     font-size: 16px;
     font-weight: 500;
     flex: 1;
+    margin: 0;
     margin-right: 16px;
+    transition: color 0.25s ease;
 }
 
 .car-tags {
     display: flex;
     gap: 8px;
     flex-shrink: 0;
+    align-items: center;
 }
 
 .car-meta {
     display: flex;
+    align-items: center;
     gap: 16px;
     font-size: 14px;
     color: $text-secondary;
     margin-bottom: auto;
+    line-height: 1;
 }
 
 .car-footer {

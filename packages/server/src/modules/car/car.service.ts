@@ -143,14 +143,47 @@ export class CarService {
 
         return this.prisma.car.create({
             data: {
-                ...dto,
                 title,
                 ownerId: userId,
+                brandId: dto.brandId,
+                seriesId: dto.seriesId,
+                firstRegDate: dto.firstRegDate,
+                mileage: dto.mileage,
+                price: dto.price,
+                displacement: dto.displacement,
+                gearbox: dto.gearbox,
+                emissionStandard: dto.emissionStandard,
+                useType: dto.useType,
+                transferCount: dto.transferCount || 0,
+                // 地理位置
+                provinceId: dto.provinceId,
+                provinceName: dto.provinceName,
+                cityId: dto.cityId,
+                cityCode: dto.cityCode,
+                cityName: dto.cityName,
+                districtId: dto.districtId,
+                districtName: dto.districtName,
+                address: dto.address,
+                lat: dto.lat,
+                lng: dto.lng,
+                // 媒体
                 coverImage: dto.images?.[0] || null,
                 images: dto.images ? JSON.stringify(dto.images) : null,
-                configs: dto.configs ? JSON.stringify(dto.configs) : null,
+                video: dto.video || null,
+                videoThumbnail: dto.videoThumbnail || null,
+                videoDuration: dto.videoDuration || null,
+                // 车辆信息
                 vin: dto.vin?.toUpperCase().trim() || null,
                 plateNumber: dto.plateNumber?.replace(/[\s·.]/g, '').toUpperCase() || null,
+                engineNumber: dto.engineNumber,
+                originalPrice: dto.originalPrice,
+                highlightDesc: dto.highlightDesc,
+                color: dto.color,
+                configs: dto.configs ? JSON.stringify(dto.configs) : null,
+                // 联系方式
+                contactPhone: dto.contactPhone || null,
+                usePlatformPhone: dto.usePlatformPhone || false,
+                // 状态
                 status: 'pending',
                 publishedAt: now,
                 expiresAt,
@@ -313,15 +346,62 @@ export class CarService {
             }
         }
 
+        // 构建更新数据
+        const updateData: any = {}
+
+        // 基本信息
+        if (dto.title !== undefined) updateData.title = dto.title
+        if (dto.brandId !== undefined) updateData.brandId = dto.brandId
+        if (dto.seriesId !== undefined) updateData.seriesId = dto.seriesId
+        if (dto.firstRegDate !== undefined) updateData.firstRegDate = dto.firstRegDate
+        if (dto.mileage !== undefined) updateData.mileage = dto.mileage
+        if (dto.price !== undefined) updateData.price = dto.price
+        if (dto.displacement !== undefined) updateData.displacement = dto.displacement
+        if (dto.gearbox !== undefined) updateData.gearbox = dto.gearbox
+        if (dto.emissionStandard !== undefined) updateData.emissionStandard = dto.emissionStandard
+        if (dto.useType !== undefined) updateData.useType = dto.useType
+        if (dto.transferCount !== undefined) updateData.transferCount = dto.transferCount
+
+        // 地理位置
+        if (dto.provinceId !== undefined) updateData.provinceId = dto.provinceId
+        if (dto.provinceName !== undefined) updateData.provinceName = dto.provinceName
+        if (dto.cityId !== undefined) updateData.cityId = dto.cityId
+        if (dto.cityCode !== undefined) updateData.cityCode = dto.cityCode
+        if (dto.cityName !== undefined) updateData.cityName = dto.cityName
+        if (dto.districtId !== undefined) updateData.districtId = dto.districtId
+        if (dto.districtName !== undefined) updateData.districtName = dto.districtName
+        if (dto.address !== undefined) updateData.address = dto.address
+        if (dto.lat !== undefined) updateData.lat = dto.lat
+        if (dto.lng !== undefined) updateData.lng = dto.lng
+
+        // 媒体
+        if (dto.images !== undefined) {
+            updateData.images = JSON.stringify(dto.images)
+            updateData.coverImage = dto.images[0] || null
+        }
+        if (dto.video !== undefined) updateData.video = dto.video
+        if (dto.videoThumbnail !== undefined) updateData.videoThumbnail = dto.videoThumbnail
+        if (dto.videoDuration !== undefined) updateData.videoDuration = dto.videoDuration
+
+        // 车辆信息
+        if (dto.vin !== undefined) updateData.vin = dto.vin?.toUpperCase().trim() || null
+        if (dto.plateNumber !== undefined) updateData.plateNumber = dto.plateNumber?.replace(/[\s·.]/g, '').toUpperCase() || null
+        if (dto.engineNumber !== undefined) updateData.engineNumber = dto.engineNumber
+        if (dto.originalPrice !== undefined) updateData.originalPrice = dto.originalPrice
+        if (dto.highlightDesc !== undefined) updateData.highlightDesc = dto.highlightDesc
+        if (dto.color !== undefined) updateData.color = dto.color
+        if (dto.configs !== undefined) updateData.configs = JSON.stringify(dto.configs)
+
+        // 联系方式
+        if (dto.contactPhone !== undefined) updateData.contactPhone = dto.contactPhone
+        if (dto.usePlatformPhone !== undefined) updateData.usePlatformPhone = dto.usePlatformPhone
+
+        // 状态
+        if (dto.status !== undefined) updateData.status = dto.status
+
         return this.prisma.car.update({
             where: { id },
-            data: {
-                ...dto,
-                images: dto.images ? JSON.stringify(dto.images) : undefined,
-                configs: dto.configs ? JSON.stringify(dto.configs) : undefined,
-                vin: dto.vin?.toUpperCase().trim() || undefined,
-                plateNumber: dto.plateNumber?.replace(/[\s·.]/g, '').toUpperCase() || undefined,
-            },
+            data: updateData,
         })
     }
 

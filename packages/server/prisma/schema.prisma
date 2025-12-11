@@ -105,12 +105,18 @@ model Car {
   status           String    @default("pending") // draft, pending, approved, on, off, sold, expired, rejected
   coverImage       String?
   images           String?   // JSON数组
-  video            String?
+  video            String?   // 视频URL
+  videoThumbnail   String?   // 视频缩略图
+  videoDuration    Int?      // 视频时长(秒)
   highlightDesc    String?   // 车辆亮点
   color            String?
   plateCity        String?   // 牌照城市
   configs          String?   // JSON数组 - 配置
   rejectReason     String?   // 驳回原因
+  
+  // 联系方式
+  contactPhone     String?   // 联系电话
+  usePlatformPhone Boolean   @default(false) // 使用平台电话
   
   // 有效期管理字段
   publishedAt      DateTime?                         // 发布时间

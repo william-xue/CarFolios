@@ -1,4 +1,82 @@
 /**
+ * 视频文件验证工具
+ */
+
+export interface ValidationResult {
+    valid: boolean
+    message?: string
+}
+
+// 允许的视频格式
+const ALLOWED_VIDEO_TYPES = ['video/mp4', 'video/avi', 'video/quicktime', 'video/x-msvideo']
+// 最大文件大小 100MB
+const MAX_VIDEO_SIZE = 100 * 1024 * 1024
+
+/**
+ * 验证视频文件
+ * @param file 文件对象
+ * @returns 验证结果
+ */
+export function validateVideoFile(file: File): ValidationResult {
+    // 格式验证
+    if (!ALLOWED_VIDEO_TYPES.includes(file.type)) {
+        return {
+            valid: false,
+            message: '仅支持 MP4、AVI、MOV 格式的视频'
+        }
+    }
+
+    // 大小验证
+    if (file.size > MAX_VIDEO_SIZE) {
+        return {
+            valid: false,
+            message: '视频文件不能超过100MB'
+        }
+    }
+
+    return { valid: true }
+}
+
+/**
+ * 验证图片文件
+ * @param file 文件对象
+ * @returns 验证结果
+ */
+export function validateImageFile(file: File): ValidationResult {
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp']
+    const maxSize = 10 * 1024 * 1024 // 10MB
+
+    if (!allowedTypes.includes(file.type)) {
+        return {
+            valid: false,
+            message: '仅支持 JPG、PNG、GIF、WebP 格式的图片'
+        }
+    }
+
+    if (file.size > maxSize) {
+        return {
+            valid: false,
+            message: '图片文件不能超过10MB'
+        }
+    }
+
+    return { valid: true }
+}
+
+/**
+ * 格式化文件大小
+ * @param bytes 字节数
+ * @returns 格式化后的字符串
+ */
+export function formatFileSize(bytes: number): string {
+    if (bytes === 0) return '0 B'
+    const k = 1024
+    const sizes = ['B', 'KB', 'MB', 'GB']
+    const i = Math.floor(Math.log(bytes) / Math.log(k))
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i]
+}
+
+/**
  * VIN 验证（17位字母数字，排除 I/O/Q）
  */
 export function validateVin(vin: string): { valid: boolean; message?: string } {

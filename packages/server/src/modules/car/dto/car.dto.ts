@@ -1,6 +1,6 @@
-import { IsString, IsNumber, IsOptional, IsArray, IsEnum } from 'class-validator'
+import { IsString, IsNumber, IsOptional, IsArray, IsEnum, IsBoolean, Min } from 'class-validator'
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger'
-import { Type } from 'class-transformer'
+import { Type, Transform } from 'class-transformer'
 
 export class CreateCarDto {
     @ApiPropertyOptional({ description: '标题（可选，不填则自动生成）' })
@@ -122,6 +122,63 @@ export class CreateCarDto {
     @IsOptional()
     @Type(() => Number)
     lng?: number
+
+    // 视频相关字段
+    @ApiPropertyOptional({ description: '视频URL' })
+    @IsOptional()
+    @IsString()
+    video?: string
+
+    @ApiPropertyOptional({ description: '视频缩略图' })
+    @IsOptional()
+    @IsString()
+    videoThumbnail?: string
+
+    @ApiPropertyOptional({ description: '视频时长(秒)' })
+    @IsOptional()
+    @Type(() => Number)
+    videoDuration?: number
+
+    // 新增车况字段
+    @ApiPropertyOptional({ description: '新车指导价(万)' })
+    @IsOptional()
+    @Type(() => Number)
+    originalPrice?: number
+
+    @ApiPropertyOptional({ description: '使用性质', enum: ['family', 'business', 'official'] })
+    @IsOptional()
+    @IsEnum(['family', 'business', 'official'])
+    useType?: string
+
+    @ApiPropertyOptional({ description: '过户次数' })
+    @IsOptional()
+    @Type(() => Number)
+    @Min(0)
+    transferCount?: number
+
+    // 联系方式字段
+    @ApiPropertyOptional({ description: '联系电话' })
+    @IsOptional()
+    @IsString()
+    contactPhone?: string
+
+    @ApiPropertyOptional({ description: '使用平台电话' })
+    @IsOptional()
+    @Transform(({ value }) => value === 'true' || value === true)
+    @IsBoolean()
+    usePlatformPhone?: boolean
+
+    // 详细地址
+    @ApiPropertyOptional({ description: '详细地址' })
+    @IsOptional()
+    @IsString()
+    address?: string
+
+    // 城市ID
+    @ApiPropertyOptional({ description: '城市ID' })
+    @IsOptional()
+    @Type(() => Number)
+    cityId?: number
 }
 
 export class UpdateCarDto extends CreateCarDto {

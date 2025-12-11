@@ -80,7 +80,11 @@ export const useCarStore = defineStore('car', () => {
         loading.value = true
         try {
             const res = await getMyCars(params)
-            cars.value = res.list
+            if (params.page === 1) {
+                cars.value = res.list
+            } else {
+                cars.value = [...cars.value, ...res.list]
+            }
             total.value = res.total
             return res
         } finally {

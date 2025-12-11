@@ -218,3 +218,152 @@ export interface VinValidationResult {
     duplicate: boolean
     message?: string
 }
+
+// ============================================
+// 车源发布增强 - 新增类型和常量
+// ============================================
+
+// 图片项状态
+export type ImageStatus = 'existing' | 'uploading' | 'done' | 'failed' | 'deleted'
+
+// 图片项接口
+export interface ImageItem {
+    id?: number | string
+    url: string
+    status: ImageStatus
+    file?: File
+    message?: string
+}
+
+// 车辆配置选项
+export const CAR_CONFIG_OPTIONS = [
+    { value: 'sunroof', label: '天窗' },
+    { value: 'panoramic_sunroof', label: '全景天窗' },
+    { value: 'navigation', label: '导航系统' },
+    { value: 'reversing_camera', label: '倒车影像' },
+    { value: 'reversing_radar', label: '倒车雷达' },
+    { value: 'cruise_control', label: '定速巡航' },
+    { value: 'adaptive_cruise', label: '自适应巡航' },
+    { value: 'leather_seats', label: '真皮座椅' },
+    { value: 'heated_seats', label: '座椅加热' },
+    { value: 'ventilated_seats', label: '座椅通风' },
+    { value: 'electric_seats', label: '电动座椅' },
+    { value: 'keyless_entry', label: '无钥匙进入' },
+    { value: 'keyless_start', label: '一键启动' },
+    { value: 'auto_parking', label: '自动泊车' },
+    { value: 'lane_departure', label: '车道偏离预警' },
+    { value: 'blind_spot', label: '盲点监测' },
+] as const
+
+// 使用性质选项
+export const USE_TYPE_OPTIONS = [
+    { value: 'family', label: '家用' },
+    { value: 'business', label: '商用' },
+    { value: 'official', label: '公务' },
+] as const
+
+// 排放标准选项
+export const EMISSION_STANDARD_OPTIONS = [
+    { value: 'guoliu', label: '国六' },
+    { value: 'guowu', label: '国五' },
+    { value: 'guosi', label: '国四' },
+    { value: 'guosan', label: '国三' },
+] as const
+
+// 变速箱类型选项
+export const GEARBOX_OPTIONS = [
+    { value: 'AT', label: '自动' },
+    { value: 'MT', label: '手动' },
+    { value: 'DCT', label: '双离合' },
+    { value: 'CVT', label: '无级变速' },
+] as const
+
+// 燃料类型选项
+export const FUEL_TYPE_OPTIONS = [
+    { value: 'gasoline', label: '汽油' },
+    { value: 'diesel', label: '柴油' },
+    { value: 'electric', label: '纯电动' },
+    { value: 'hybrid', label: '油电混合' },
+    { value: 'phev', label: '插电混动' },
+] as const
+
+// 增强版车源表单数据
+export interface CarFormData {
+    // 基本信息
+    brandId: number | null
+    seriesId: number | null
+    title: string
+    price: number | null
+    originalPrice: number | null
+
+    // 车况信息
+    firstRegDate: string
+    mileage: number | null
+    gearbox: string
+    fuelType: string
+    displacement: number | null
+    color: string
+    vin: string
+    plateNumber: string
+    transferCount: number
+    useType: string
+    emissionStandard: string
+
+    // 地理位置
+    provinceId: number | null
+    provinceName: string
+    cityId: number | null
+    cityName: string
+    districtId: number | null
+    districtName: string
+    address: string
+
+    // 媒体
+    images: ImageItem[]
+    video: string
+    videoThumbnail: string
+
+    // 联系方式
+    contactPhone: string
+    usePlatformPhone: boolean
+
+    // 描述和配置
+    highlightDesc: string
+    configs: string[]
+}
+
+// 创建空表单数据
+export function createEmptyCarFormData(): CarFormData {
+    return {
+        brandId: null,
+        seriesId: null,
+        title: '',
+        price: null,
+        originalPrice: null,
+        firstRegDate: '',
+        mileage: null,
+        gearbox: '',
+        fuelType: '',
+        displacement: null,
+        color: '',
+        vin: '',
+        plateNumber: '',
+        transferCount: 0,
+        useType: '',
+        emissionStandard: '',
+        provinceId: null,
+        provinceName: '',
+        cityId: null,
+        cityName: '',
+        districtId: null,
+        districtName: '',
+        address: '',
+        images: [],
+        video: '',
+        videoThumbnail: '',
+        contactPhone: '',
+        usePlatformPhone: false,
+        highlightDesc: '',
+        configs: []
+    }
+}
