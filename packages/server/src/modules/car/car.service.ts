@@ -191,7 +191,7 @@ export class CarService {
         })
     }
 
-    // 获取车源列表（支持位置筛选）
+    // 获取车源列表（支持位置筛选、里程筛选、年份筛选）
     async findAll(query: QueryCarDto & LocationQueryDto) {
         const {
             page = 1,
@@ -203,6 +203,12 @@ export class CarService {
             provinceId,
             cityId,
             districtId,
+            mileageMin,
+            mileageMax,
+            yearMin,
+            yearMax,
+            priceMin,
+            priceMax,
         } = query
 
         const where: any = {}
@@ -228,6 +234,36 @@ export class CarService {
         }
         if (districtId) {
             where.districtId = districtId
+        }
+        // 里程筛选
+        if (mileageMin !== undefined || mileageMax !== undefined) {
+            where.mileage = {}
+            if (mileageMin !== undefined) {
+                where.mileage.gte = mileageMin
+            }
+            if (mileageMax !== undefined) {
+                where.mileage.lte = mileageMax
+            }
+        }
+        // 年份筛选（基于 firstRegDate 字段）
+        if (yearMin !== undefined || yearMax !== undefined) {
+            where.firstRegDate = {}
+            if (yearMin !== undefined) {
+                where.firstRegDate.gte = `${yearMin}-01-01`
+            }
+            if (yearMax !== undefined) {
+                where.firstRegDate.lte = `${yearMax}-12-31`
+            }
+        }
+        // 价格筛选
+        if (priceMin !== undefined || priceMax !== undefined) {
+            where.price = {}
+            if (priceMin !== undefined) {
+                where.price.gte = priceMin
+            }
+            if (priceMax !== undefined) {
+                where.price.lte = priceMax
+            }
         }
 
         const [list, total] = await Promise.all([

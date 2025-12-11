@@ -10,18 +10,21 @@ const props = withDefaults(
         hasMore?: boolean
         showStatus?: boolean
         showExpireWarning?: boolean
+        showFavorite?: boolean
     }>(),
     {
         loading: false,
         hasMore: false,
         showStatus: false,
         showExpireWarning: false,
+        showFavorite: false,
     }
 )
 
 const emit = defineEmits<{
     (e: 'load-more'): void
     (e: 'click-car', car: CarListItem): void
+    (e: 'login-required'): void
 }>()
 
 const containerRef = ref<HTMLElement | null>(null)
@@ -54,23 +57,54 @@ function handleCarClick(car: CarListItem) {
 
 <template>
     <div ref="containerRef" class="car-grid-container">
-        <div v-if="cars.length === 0 && !loading" class="empty-state">
-            <el-empty description="暂无车源" />
+        <!-- 骨架屏加载态（仅在初始加载且无数据时显示） -->
+        <div v-if="loading && cars.length === 0" class="car-grid">
+            <div v-for="i in 8" :key="i" class="skeleton-card">
+                <el-skeleton animated>
+                    <template #template>
+                        <el-skeleton-item variant="image" style="width: 100%; height: 200px" />
+                        <div style="padding: 12px">
+                            <el-skeleton-item variant="h3" style="width: 80%; margin-bottom: 8px" />
+                            <div style="display: flex; gap: 8px; margin-bottom: 8px">
+                                <el-skeleton-item variant="text" style="width: 20%" />
+                                <el-skeleton-item variant="text" style="width: 20%" />
+                            </div>
+                            <div style="display: flex; justify-content: space-between">
+                                <el-skeleton-item variant="text" style="width: 30%" />
+                                <el-skeleton-item variant="text" style="width: 20%" />
+                            </div>
+                        </div>
+                    </template>
+                </el-skeleton>
+            </div>
         </div>
-        <div v-else class="car-grid">
+
+        <!-- 真实数据 -->
+        <div v-else-if="cars.length > 0" class="car-grid">
             <CarCard
                 v-for="car in cars"
                 :key="car.id"
                 :car="car"
                 :show-status="showStatus"
                 :show-expire-warning="showExpireWarning"
+                :show-favorite="showFavorite"
                 @click="handleCarClick"
+                @login-required="emit('login-required')"
             />
         </div>
-        <div v-if="loading" class="loading-state">
+
+        <!-- 空状态 -->
+        <div v-else-if="!loading" class="empty-state">
+            <el-empty description="暂无车源" />
+        </div>
+
+        <!-- 底部加载中（加载更多时显示） -->
+        <div v-if="loading && cars.length > 0" class="loading-state">
             <el-icon class="is-loading"><Loading /></el-icon>
             <span>加载中...</span>
         </div>
+
+        <!-- 没有更多 -->
         <div v-else-if="!hasMore && cars.length > 0" class="no-more">
             <span>没有更多了</span>
         </div>
@@ -98,6 +132,13 @@ function handleCarClick(car: CarListItem) {
     @media (max-width: $breakpoint-md) {
         grid-template-columns: 1fr;
     }
+}
+
+.skeleton-card {
+    background: #fff;
+    border-radius: $border-radius-md;
+    overflow: hidden;
+    border: 1px solid $border-color-lighter;
 }
 
 .empty-state {

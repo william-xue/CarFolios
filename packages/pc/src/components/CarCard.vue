@@ -1,20 +1,77 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import type { CarListItem } from '@/types'
 import { formatGearbox, isExpiringSoon, isExpired, getRemainingDays } from '@/utils'
 import { useLocale } from '@/composables/useLocale'
+import { useUserStore } from '@/stores/user'
+import { addFavorite, removeFavorite, checkFavorite } from '@/api/favorite'
+import { ElMessage } from 'element-plus'
 
 const { t, formatPrice, formatMileage } = useLocale()
+const userStore = useUserStore()
 
 const props = defineProps<{
     car: CarListItem
     showStatus?: boolean
     showExpireWarning?: boolean
+    showFavorite?: boolean
 }>()
 
 const emit = defineEmits<{
     (e: 'click', car: CarListItem): void
+    (e: 'login-required'): void
+    (e: 'favorite-change', isFavorited: boolean): void
 }>()
+
+// 收藏状态
+const isFavorited = ref(false)
+const favoriteLoading = ref(false)
+
+// 初始化收藏状态
+async function initFavoriteStatus() {
+    if (!props.showFavorite || !userStore.isLoggedIn) return
+    try {
+        const result = await checkFavorite(props.car.id)
+        isFavorited.value = result.isFavorited
+    } catch (error) {
+        // 静默失败
+    }
+}
+
+// 切换收藏
+async function handleFavoriteClick(event: Event) {
+    event.stopPropagation()
+    
+    if (!userStore.isLoggedIn) {
+        emit('login-required')
+        return
+    }
+    
+    if (favoriteLoading.value) return
+    
+    favoriteLoading.value = true
+    try {
+        if (isFavorited.value) {
+            await removeFavorite(props.car.id)
+            isFavorited.value = false
+            ElMessage.success(t('favorite.removeSuccess') || '已取消收藏')
+        } else {
+            await addFavorite(props.car.id)
+            isFavorited.value = true
+            ElMessage.success(t('favorite.addSuccess') || '收藏成功')
+        }
+        emit('favorite-change', isFavorited.value)
+    } catch (error: any) {
+        ElMessage.error(error.message || t('message.operationFailed'))
+    } finally {
+        favoriteLoading.value = false
+    }
+}
+
+// 组件挂载时初始化
+if (props.showFavorite) {
+    initFavoriteStatus()
+}
 
 const expireStatus = computed<{ type: 'danger' | 'warning'; text: string } | null>(() => {
     if (!props.car.expireDate) return null
@@ -78,6 +135,22 @@ function handleClick() {
             >
                 {{ expireStatus.text }}
             </el-tag>
+            <!-- 收藏按钮 -->
+            <button
+                v-if="showFavorite"
+                class="favorite-btn"
+                :class="{ 'is-favorited': isFavorited, 'is-loading': favoriteLoading }"
+                :aria-label="isFavorited ? (t('favorite.remove') || '取消收藏') : (t('favorite.add') || '收藏')"
+                :aria-pressed="isFavorited"
+                @click="handleFavoriteClick"
+            >
+                <svg v-if="isFavorited" viewBox="0 0 24 24" fill="currentColor" class="heart-icon">
+                    <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+                </svg>
+                <svg v-else viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="heart-icon">
+                    <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+                </svg>
+            </button>
         </div>
         <div class="car-info">
             <h3 class="car-title ellipsis-2">{{ car.title }}</h3>
@@ -166,6 +239,42 @@ function handleClick() {
     position: absolute;
     top: 8px;
     right: 8px;
+}
+
+.favorite-btn {
+    position: absolute;
+    bottom: 8px;
+    right: 8px;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.9);
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    
+    &:hover {
+        background: #fff;
+        transform: scale(1.1);
+    }
+    
+    &.is-favorited {
+        color: var(--el-color-danger);
+    }
+    
+    &.is-loading {
+        opacity: 0.6;
+        pointer-events: none;
+    }
+    
+    .heart-icon {
+        width: 18px;
+        height: 18px;
+    }
 }
 
 .car-info {

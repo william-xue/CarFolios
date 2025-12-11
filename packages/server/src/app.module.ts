@@ -14,6 +14,8 @@ import { PaymentModule } from './modules/payment/payment.module'
 import { RegionModule } from './modules/region/region.module'
 import { NotificationModule } from './modules/notification/notification.module'
 import { SchedulerModule } from './modules/scheduler/scheduler.module'
+import { FavoriteModule } from './modules/favorite/favorite.module'
+import { CommentModule } from './modules/comment/comment.module'
 
 @Module({
     imports: [
@@ -39,6 +41,8 @@ import { SchedulerModule } from './modules/scheduler/scheduler.module'
         RegionModule,
         NotificationModule,
         SchedulerModule,
+        FavoriteModule,
+        CommentModule,
     ],
 })
 export class AppModule { }

@@ -11,7 +11,7 @@ const userStore = useUserStore()
 const menuItems = computed(() => [
     { icon: 'Document', title: t('nav.myCars'), desc: t('nav.myCars'), path: '/my-cars' },
     { icon: 'List', title: t('nav.myOrders'), desc: t('nav.myOrders'), path: '/my-orders' },
-    { icon: 'Star', title: t('user.myFavorites'), desc: t('user.myFavorites'), path: '/favorites', disabled: true },
+    { icon: 'Star', title: t('user.myFavorites'), desc: t('user.myFavorites'), path: '/favorites' },
     { icon: 'Clock', title: t('common.more'), desc: t('common.more'), path: '/history', disabled: true },
 ])
 

@@ -3,6 +3,7 @@ import { ref, watch, computed } from 'vue'
 import type { Brand } from '@/types'
 import { Search } from '@element-plus/icons-vue'
 import LocationSelector from './LocationSelector.vue'
+import RangeSlider, { type RangePreset } from './RangeSlider.vue'
 import { useLocale } from '@/composables/useLocale'
 
 const { t } = useLocale()
@@ -21,6 +22,10 @@ interface FilterParams {
     brandId: number | null
     priceMin: number | null
     priceMax: number | null
+    mileageMin: number | null
+    mileageMax: number | null
+    yearMin: number | null
+    yearMax: number | null
     provinceCode: string | null
     cityCode: string | null
     districtCode: string | null
@@ -30,7 +35,12 @@ const keyword = ref('')
 const brandId = ref<number | null>(null)
 const priceMin = ref<number | null>(null)
 const priceMax = ref<number | null>(null)
+const mileageRange = ref<[number | null, number | null]>([null, null])
+const yearRange = ref<[number | null, number | null]>([null, null])
 const location = ref<string[]>([])
+
+// 当前年份
+const currentYear = new Date().getFullYear()
 
 // 价格区间预设
 const priceRanges = computed(() => [
@@ -40,6 +50,23 @@ const priceRanges = computed(() => [
     { label: `20-30${t('common.yuan')}`, min: 200000, max: 300000 },
     { label: `30-50${t('common.yuan')}`, min: 300000, max: 500000 },
     { label: `50${t('common.yuan')}${t('filter.unlimited') === 'Any' ? '+' : '以上'}`, min: 500000, max: null },
+])
+
+// 里程区间预设 (单位：万公里)
+const mileagePresets = computed<RangePreset[]>(() => [
+    { label: '1万以下', min: null, max: 1 },
+    { label: '1-3万', min: 1, max: 3 },
+    { label: '3-5万', min: 3, max: 5 },
+    { label: '5-10万', min: 5, max: 10 },
+    { label: '10万以上', min: 10, max: null },
+])
+
+// 年份区间预设
+const yearPresets = computed<RangePreset[]>(() => [
+    { label: '1年内', min: currentYear - 1, max: currentYear },
+    { label: '3年内', min: currentYear - 3, max: currentYear },
+    { label: '5年内', min: currentYear - 5, max: currentYear },
+    { label: '5年以上', min: 2000, max: currentYear - 5 },
 ])
 
 function selectPriceRange(range: { min: number; max: number | null }) {
@@ -54,6 +81,10 @@ function handleSearch() {
         brandId: brandId.value,
         priceMin: priceMin.value,
         priceMax: priceMax.value,
+        mileageMin: mileageRange.value[0],
+        mileageMax: mileageRange.value[1],
+        yearMin: yearRange.value[0],
+        yearMax: yearRange.value[1],
         provinceCode: location.value[0] || null,
         cityCode: location.value[1] || null,
         districtCode: location.value[2] || null,
@@ -65,8 +96,22 @@ function handleReset() {
     brandId.value = null
     priceMin.value = null
     priceMax.value = null
+    mileageRange.value = [null, null]
+    yearRange.value = [null, null]
     location.value = []
     emit('reset')
+}
+
+// 处理里程区间变化
+function handleMileageChange(value: [number | null, number | null]) {
+    mileageRange.value = value
+    handleSearch()
+}
+
+// 处理年份区间变化
+function handleYearChange(value: [number | null, number | null]) {
+    yearRange.value = value
+    handleSearch()
 }
 
 function handleLocationChange(codes: string[]) {
@@ -164,6 +209,40 @@ watch(brandId, () => {
                     />
                     <span class="price-unit">元</span>
                 </div>
+            </div>
+        </div>
+
+        <!-- 里程区间筛选 -->
+        <div class="filter-row">
+            <label class="filter-label" id="mileage-label">里程</label>
+            <div class="filter-content">
+                <RangeSlider
+                    :model-value="mileageRange"
+                    :min="0"
+                    :max="50"
+                    :step="1"
+                    unit="万公里"
+                    :presets="mileagePresets"
+                    aria-labelledby="mileage-label"
+                    @update:model-value="handleMileageChange"
+                />
+            </div>
+        </div>
+
+        <!-- 年份区间筛选 -->
+        <div class="filter-row">
+            <label class="filter-label" id="year-label">年份</label>
+            <div class="filter-content">
+                <RangeSlider
+                    :model-value="yearRange"
+                    :min="2000"
+                    :max="currentYear"
+                    :step="1"
+                    unit="年"
+                    :presets="yearPresets"
+                    aria-labelledby="year-label"
+                    @update:model-value="handleYearChange"
+                />
             </div>
         </div>
 

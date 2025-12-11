@@ -1,3 +1,4 @@
+/// <reference types="vitest" />
 import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
 import { fileURLToPath, URL } from 'node:url'
@@ -8,6 +9,15 @@ import VueI18nPlugin from '@intlify/unplugin-vue-i18n/vite'
 import { resolve, dirname } from 'node:path'
 
 export default defineConfig({
+    test: {
+        globals: true,
+        environment: 'happy-dom',
+        include: ['src/**/*.{test,spec}.{js,ts}'],
+        css: false,
+        deps: {
+            inline: ['element-plus'],
+        },
+    },
     plugins: [
         vue(),
         AutoImport({

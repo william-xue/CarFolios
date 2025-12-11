@@ -7,9 +7,12 @@ import { useOrderStore } from '@/stores/order'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import ImageGallery from '@/components/ImageGallery.vue'
 import LoginModal from '@/components/LoginModal.vue'
+import SharePopover from '@/components/SharePopover.vue'
+import FavoriteButton from '@/components/FavoriteButton.vue'
+import CommentSection from '@/components/CommentSection.vue'
 import { formatGearbox, formatFuelType, formatDate } from '@/utils'
 import { useLocale } from '@/composables/useLocale'
-import { Location } from '@element-plus/icons-vue'
+import { Location, Star, Picture, Phone, Calendar } from '@element-plus/icons-vue'
 
 const { t, formatPrice, formatMileage } = useLocale()
 const route = useRoute()
@@ -138,12 +141,19 @@ async function loadCarDetail() {
         setTimeout(() => {
             initMap()
         }, 100)
+        // 加载推荐车辆
+        await carStore.fetchRecommendedCars(carId.value, 6)
     } catch (error) {
         ElMessage.error(t('message.operationFailed'))
         router.push('/')
     } finally {
         loading.value = false
     }
+}
+
+// 点击推荐车辆
+function handleRecommendClick(car: any) {
+    router.push(`/car/${car.id}`)
 }
 
 // 预约看车
@@ -215,7 +225,18 @@ onUnmounted(() => {
 
                 <!-- 右侧：基本信息 -->
                 <div class="detail-right">
-                    <h1 class="car-title">{{ car.title }}</h1>
+                    <div class="title-row">
+                        <h1 class="car-title">{{ car.title }}</h1>
+                        <div class="title-actions">
+                            <FavoriteButton
+                                :car-id="carId"
+                                size="large"
+                                :show-text="true"
+                                @login-required="showLoginModal = true"
+                            />
+                            <SharePopover :title="car.title" :image="car.coverImage" />
+                        </div>
+                    </div>
                     <div class="car-price">
                         <span class="price-value">{{ formatPrice(car.price) }}</span>
                     </div>
@@ -314,6 +335,49 @@ onUnmounted(() => {
                     </div>
                 </div>
             </div>
+
+            <!-- 评论区 - Requirements: 5.1, 5.3 -->
+            <div class="comment-section-wrapper card">
+                <CommentSection
+                    :car-id="carId"
+                    :owner-id="car.ownerId"
+                    @login-required="showLoginModal = true"
+                />
+            </div>
+
+            <!-- 推荐车辆 -->
+            <div v-if="carStore.recommendedCars.length > 0" class="recommend-section card">
+                <h2 class="section-title">
+                    <el-icon><Star /></el-icon>
+                    {{ t('car.recommend') || '猜你喜欢' }}
+                </h2>
+                <div class="recommend-grid">
+                    <div
+                        v-for="item in carStore.recommendedCars"
+                        :key="item.id"
+                        class="recommend-item"
+                        @click="handleRecommendClick(item)"
+                    >
+                        <div class="recommend-image">
+                            <el-image :src="item.coverImage" fit="cover">
+                                <template #error>
+                                    <div class="image-placeholder">
+                                        <el-icon><Picture /></el-icon>
+                                    </div>
+                                </template>
+                            </el-image>
+                        </div>
+                        <div class="recommend-info">
+                            <h4 class="recommend-title">{{ item.title }}</h4>
+                            <div class="recommend-meta">
+                                <span>{{ item.firstRegDate }}</span>
+                                <span>{{ formatMileage(item.mileage) }}</span>
+                            </div>
+                            <div class="recommend-price">{{ formatPrice(item.price) }}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
 
         <!-- 登录弹窗 -->
@@ -350,11 +414,26 @@ onUnmounted(() => {
     gap: 16px;
 }
 
+.title-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 16px;
+}
+
+.title-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
+}
+
 .car-title {
     font-size: 24px;
     font-weight: 600;
     line-height: 1.4;
     color: $text-primary;
+    flex: 1;
 }
 
 .car-price {
@@ -545,5 +624,95 @@ onUnmounted(() => {
         margin-top: 12px;
         font-size: 14px;
     }
+}
+
+// 评论区
+.comment-section-wrapper {
+    padding: 20px;
+    margin-bottom: 24px;
+}
+
+// 推荐车辆
+.recommend-section {
+    padding: 20px;
+    margin-bottom: 24px;
+}
+
+.recommend-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+
+    @media (max-width: $breakpoint-lg) {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    @media (max-width: $breakpoint-md) {
+        grid-template-columns: 1fr;
+    }
+}
+
+.recommend-item {
+    background: #fff;
+    border-radius: $border-radius-md;
+    overflow: hidden;
+    cursor: pointer;
+    transition: all 0.3s;
+    border: 1px solid $border-color-lighter;
+
+    &:hover {
+        transform: translateY(-4px);
+        box-shadow: $box-shadow-md;
+    }
+}
+
+.recommend-image {
+    width: 100%;
+    height: 140px;
+    overflow: hidden;
+
+    .el-image {
+        width: 100%;
+        height: 100%;
+    }
+}
+
+.image-placeholder {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: $bg-color;
+    color: $text-placeholder;
+    font-size: 32px;
+}
+
+.recommend-info {
+    padding: 12px;
+}
+
+.recommend-title {
+    font-size: 14px;
+    font-weight: 500;
+    color: $text-primary;
+    margin-bottom: 8px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.recommend-meta {
+    display: flex;
+    gap: 12px;
+    font-size: 12px;
+    color: $text-secondary;
+    margin-bottom: 8px;
+}
+
+.recommend-price {
+    font-size: 16px;
+    font-weight: 600;
+    color: $price-color;
 }
 </style>

@@ -19,6 +19,10 @@ interface FetchCarsParams extends PageParams {
     brandId?: number
     priceMin?: number
     priceMax?: number
+    mileageMin?: number
+    mileageMax?: number
+    yearMin?: number
+    yearMax?: number
     provinceCode?: string
     cityCode?: string
     districtCode?: string
@@ -27,6 +31,7 @@ interface FetchCarsParams extends PageParams {
 export const useCarStore = defineStore('car', () => {
     const cars = ref<CarListItem[]>([])
     const currentCar = ref<CarDetail | null>(null)
+    const recommendedCars = ref<CarListItem[]>([])
     const brands = ref<Brand[]>([])
     const series = ref<Series[]>([])
     const loading = ref(false)
@@ -132,9 +137,51 @@ export const useCarStore = defineStore('car', () => {
         currentCar.value = null
     }
 
+    // 获取推荐车辆（基于当前车辆的品牌和价格区间）
+    async function fetchRecommendedCars(currentCarId: number, limit = 6): Promise<CarListItem[]> {
+        try {
+            // 获取同品牌或相似价格区间的车辆
+            const params: FetchCarsParams = {
+                page: 1,
+                pageSize: limit + 1, // 多取一个，排除当前车辆
+            }
+
+            // 如果有当前车辆信息，基于品牌推荐
+            if (currentCar.value?.brandId) {
+                params.brandId = currentCar.value.brandId
+            }
+
+            const res = await getCars(params)
+            // 过滤掉当前车辆
+            recommendedCars.value = res.list
+                .filter(car => car.id !== currentCarId)
+                .slice(0, limit)
+
+            // 如果同品牌车辆不足，补充其他车辆
+            if (recommendedCars.value.length < limit) {
+                const moreRes = await getCars({ page: 1, pageSize: limit * 2 })
+                const moreCars = moreRes.list
+                    .filter(car => car.id !== currentCarId && !recommendedCars.value.some(r => r.id === car.id))
+                    .slice(0, limit - recommendedCars.value.length)
+                recommendedCars.value = [...recommendedCars.value, ...moreCars]
+            }
+
+            return recommendedCars.value
+        } catch (error) {
+            console.error('获取推荐车辆失败:', error)
+            return []
+        }
+    }
+
+    // 清空推荐车辆
+    function clearRecommendedCars() {
+        recommendedCars.value = []
+    }
+
     return {
         cars,
         currentCar,
+        recommendedCars,
         brands,
         series,
         loading,
@@ -151,5 +198,7 @@ export const useCarStore = defineStore('car', () => {
         renewCar,
         validateVin,
         clearCurrentCar,
+        fetchRecommendedCars,
+        clearRecommendedCars,
     }
 })

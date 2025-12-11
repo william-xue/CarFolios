@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import { ref, reactive, onMounted, computed } from 'vue'
+import { ref, reactive, onMounted, computed, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useCarStore } from '@/stores/car'
-import { ElMessage } from 'element-plus'
+import { ElMessage, ElMessageBox } from 'element-plus'
 import type { FormInstance, FormRules } from 'element-plus'
 import LocationSelector from '@/components/LocationSelector.vue'
 import ImageUploader from '@/components/ImageUploader.vue'
@@ -17,9 +17,12 @@ const { t } = useLocale()
 const router = useRouter()
 const carStore = useCarStore()
 
+const DRAFT_KEY = 'car_publish_draft'
+
 const formRef = ref<FormInstance>()
 const currentStep = ref(0)
 const submitting = ref(false)
+const hasDraft = ref(false)
 
 // 表单数据
 const formData = reactive({
@@ -55,6 +58,84 @@ const formData = reactive({
   contactPhone: '',
   usePlatformPhone: false,
 })
+
+// 监听数据变化，自动保存草稿（防抖）
+let autoSaveTimer: ReturnType<typeof setTimeout> | null = null
+
+watch(
+    formData,
+    () => {
+        if (autoSaveTimer) clearTimeout(autoSaveTimer)
+        autoSaveTimer = setTimeout(() => {
+            saveDraft()
+        }, 1000)
+    },
+    { deep: true }
+)
+
+// 保存草稿
+function saveDraft() {
+    try {
+        localStorage.setItem(DRAFT_KEY, JSON.stringify({
+            step: currentStep.value,
+            data: formData,
+            timestamp: Date.now()
+        }))
+    } catch (e) {
+        console.warn('草稿保存失败', e)
+    }
+}
+
+// 恢复草稿
+function restoreDraft() {
+    try {
+        const draftStr = localStorage.getItem(DRAFT_KEY)
+        if (!draftStr) return
+
+        const draft = JSON.parse(draftStr)
+        // 简单的有效期检查（例如 7 天）
+        if (Date.now() - draft.timestamp > 7 * 24 * 60 * 60 * 1000) {
+            clearDraft()
+            return
+        }
+
+        Object.assign(formData, draft.data)
+        currentStep.value = draft.step || 0
+        ElMessage.success('已恢复上次编辑内容')
+        
+        // 恢复后如果是第二步，需要重新加载车系数据
+        if (formData.brandId) {
+            carStore.fetchSeries(formData.brandId)
+        }
+    } catch (e) {
+        console.warn('草稿恢复失败', e)
+    }
+}
+
+// 清除草稿
+function clearDraft() {
+    localStorage.removeItem(DRAFT_KEY)
+}
+
+// 检查草稿
+function checkDraft() {
+    const draftStr = localStorage.getItem(DRAFT_KEY)
+    if (draftStr) {
+        ElMessageBox.confirm(
+            '检测到您有未完成的发布内容，是否恢复？',
+            '恢复草稿',
+            {
+                confirmButtonText: '恢复',
+                cancelButtonText: '取消',
+                type: 'info',
+            }
+        ).then(() => {
+            restoreDraft()
+        }).catch(() => {
+            clearDraft()
+        })
+    }
+}
 
 // 图片上传组件引用
 const imageUploaderRef = ref<InstanceType<typeof ImageUploader>>()
@@ -248,6 +329,7 @@ async function handleSubmit() {
     }
 
     await carStore.createCar(submitData)
+    clearDraft() // 提交成功后清除草稿
     ElMessage.success(t('publish.success'))
     router.push('/my-cars')
   } catch (error: any) {
@@ -259,6 +341,7 @@ async function handleSubmit() {
 
 onMounted(() => {
     carStore.fetchBrands()
+    checkDraft()
 })
 </script>
 

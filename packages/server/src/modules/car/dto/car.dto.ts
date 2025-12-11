@@ -218,6 +218,36 @@ export class QueryCarDto {
     @IsOptional()
     @IsString()
     sourceType?: string
+
+    @ApiPropertyOptional({ description: '最小里程(万公里)' })
+    @IsOptional()
+    @Type(() => Number)
+    mileageMin?: number
+
+    @ApiPropertyOptional({ description: '最大里程(万公里)' })
+    @IsOptional()
+    @Type(() => Number)
+    mileageMax?: number
+
+    @ApiPropertyOptional({ description: '最小年份' })
+    @IsOptional()
+    @Type(() => Number)
+    yearMin?: number
+
+    @ApiPropertyOptional({ description: '最大年份' })
+    @IsOptional()
+    @Type(() => Number)
+    yearMax?: number
+
+    @ApiPropertyOptional({ description: '最低价格(万)' })
+    @IsOptional()
+    @Type(() => Number)
+    priceMin?: number
+
+    @ApiPropertyOptional({ description: '最高价格(万)' })
+    @IsOptional()
+    @Type(() => Number)
+    priceMax?: number
 }
 
 export class AuditCarDto {

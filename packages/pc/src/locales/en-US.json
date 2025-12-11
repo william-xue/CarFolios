@@ -273,5 +273,17 @@
     "language": {
         "switch": "Switch Language",
         "current": "Current Language"
+    },
+    "share": {
+        "title": "Share Car",
+        "copyLink": "Copy Link",
+        "wechat": "WeChat",
+        "weibo": "Weibo",
+        "qq": "QQ",
+        "poster": "Poster",
+        "nativeShare": "System Share",
+        "copySuccess": "Link copied to clipboard",
+        "copyFailed": "Copy failed, please copy manually",
+        "wechatTip": "Please copy the link and share it in WeChat"
     }
 }

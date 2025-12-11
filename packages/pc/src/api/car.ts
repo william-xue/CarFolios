@@ -6,6 +6,10 @@ interface FetchCarsParams extends PageParams {
     brandId?: number
     priceMin?: number
     priceMax?: number
+    mileageMin?: number
+    mileageMax?: number
+    yearMin?: number
+    yearMax?: number
     provinceCode?: string
     cityCode?: string
     districtCode?: string

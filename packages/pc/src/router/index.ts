@@ -1,6 +1,9 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import type { RouteRecordRaw } from 'vue-router'
 import { useUserStore } from '@/stores/user'
+import NProgress from 'nprogress'
+
+NProgress.configure({ showSpinner: false })
 
 const routes: RouteRecordRaw[] = [
     {
@@ -50,6 +53,12 @@ const routes: RouteRecordRaw[] = [
                 meta: { title: '我的订单', requiresAuth: true },
             },
             {
+                path: 'favorites',
+                name: 'Favorites',
+                component: () => import('@/views/user/favorites.vue'),
+                meta: { title: '我的收藏', requiresAuth: true },
+            },
+            {
                 path: 'car/edit/:id',
                 name: 'CarEdit',
                 component: () => import('@/views/car/edit.vue'),
@@ -84,6 +93,8 @@ const router = createRouter({
 
 // 路由守卫
 router.beforeEach((to, _from, next) => {
+    NProgress.start()
+
     // 设置页面标题
     document.title = `${to.meta.title || 'CarFolios'} - 二手车信息发布平台`
 
@@ -97,6 +108,10 @@ router.beforeEach((to, _from, next) => {
     }
 
     next()
+})
+
+router.afterEach(() => {
+    NProgress.done()
 })
 
 export default router

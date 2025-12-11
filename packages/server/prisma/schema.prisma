@@ -42,6 +42,8 @@ model User {
   sellOrders    Order[]        @relation("SellerOrders")
   payments      Payment[]
   notifications Notification[]
+  favorites     Favorite[]
+  comments      Comment[]
 }
 
 // 品牌
@@ -128,10 +130,12 @@ model Car {
   createdAt        DateTime  @default(now())
   updatedAt        DateTime  @updatedAt
 
-  owner  User     @relation(fields: [ownerId], references: [id])
-  brand  Brand    @relation(fields: [brandId], references: [id])
-  series Series   @relation(fields: [seriesId], references: [id])
-  orders Order[]
+  owner     User       @relation(fields: [ownerId], references: [id])
+  brand     Brand      @relation(fields: [brandId], references: [id])
+  series    Series     @relation(fields: [seriesId], references: [id])
+  orders    Order[]
+  favorites Favorite[]
+  comments  Comment[]
 
   @@index([provinceId])
   @@index([cityId])
@@ -273,6 +277,46 @@ model Region_Car_District {
   region   Region @relation(fields: [regionId], references: [id])
 
   @@unique([regionId, carId])
+}
+
+// ============================================
+// 收藏表 - 用户收藏的车辆
+// ============================================
+model Favorite {
+  id        Int      @id @default(autoincrement())
+  userId    Int                                       // 用户ID
+  carId     Int                                       // 车辆ID
+  createdAt DateTime @default(now())                  // 收藏时间
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  car  Car  @relation(fields: [carId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, carId])                           // 用户-车辆唯一约束
+  @@index([userId])
+  @@index([carId])
+}
+
+// ============================================
+// 评论表 - 车辆评论
+// ============================================
+model Comment {
+  id        Int      @id @default(autoincrement())
+  userId    Int                                       // 评论用户ID
+  carId     Int                                       // 车辆ID
+  content   String                                    // 评论内容
+  parentId  Int?                                      // 回复的评论ID
+  status    Int      @default(1)                      // 状态: 0-已删除 1-正常
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user    User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  car     Car       @relation(fields: [carId], references: [id], onDelete: Cascade)
+  parent  Comment?  @relation("CommentReplies", fields: [parentId], references: [id])
+  replies Comment[] @relation("CommentReplies")
+
+  @@index([carId, status])
+  @@index([userId])
+  @@index([parentId])
 }
 
 // ============================================

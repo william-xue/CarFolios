@@ -101,7 +101,7 @@ async function handleFileSelect(event: Event) {
 
         // 添加图片到列表
         const item: ImageItem = {
-            id: `new-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+            id: `new-${Date.now()}-${Math.random().toString(36).slice(2, 11)}`,
             url: URL.createObjectURL(file),
             status: 'uploading',
             file,

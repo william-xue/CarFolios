@@ -1,16 +1,41 @@
 <script setup lang="ts">
-import { ref, computed, watch } from 'vue'
+import { ref, computed, watch, onMounted, onUnmounted } from 'vue'
 import { ArrowLeft, ArrowRight } from '@element-plus/icons-vue'
 
-const props = defineProps<{
-    images: string[]
-}>()
+const props = withDefaults(
+    defineProps<{
+        images: string[]
+        autoplay?: boolean
+        interval?: number
+    }>(),
+    {
+        autoplay: true,
+        interval: 3000,
+    }
+)
 
 const currentIndex = ref(0)
+let timer: ReturnType<typeof setInterval> | null = null
 
 const currentImage = computed(() => {
     return props.images[currentIndex.value] || ''
 })
+
+function startAutoplay() {
+    if (props.autoplay && props.images.length > 1) {
+        stopAutoplay()
+        timer = setInterval(() => {
+            nextImage()
+        }, props.interval)
+    }
+}
+
+function stopAutoplay() {
+    if (timer) {
+        clearInterval(timer)
+        timer = null
+    }
+}
 
 function selectImage(index: number) {
     currentIndex.value = index
@@ -37,19 +62,50 @@ watch(
     () => props.images,
     () => {
         currentIndex.value = 0
+        startAutoplay()
     }
 )
+
+// 监听 autoplay 变化
+watch(
+    () => props.autoplay,
+    (val) => {
+        if (val) {
+            startAutoplay()
+        } else {
+            stopAutoplay()
+        }
+    }
+)
+
+onMounted(() => {
+    startAutoplay()
+})
+
+onUnmounted(() => {
+    stopAutoplay()
+})
 
 // 预览相关
 const previewVisible = ref(false)
 
 function openPreview() {
+    stopAutoplay() // 打开预览时停止轮播
     previewVisible.value = true
+}
+
+function closePreview() {
+    previewVisible.value = false
+    startAutoplay() // 关闭预览后恢复轮播
 }
 </script>
 
 <template>
-    <div class="image-gallery">
+    <div 
+        class="image-gallery"
+        @mouseenter="stopAutoplay"
+        @mouseleave="startAutoplay"
+    >
         <!-- 主图 -->
         <div 
             class="main-image-wrapper" 
@@ -106,7 +162,7 @@ function openPreview() {
             v-if="previewVisible"
             :url-list="images"
             :initial-index="currentIndex"
-            @close="previewVisible = false"
+            @close="closePreview"
         />
     </div>
 </template>
