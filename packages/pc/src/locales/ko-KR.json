@@ -23,7 +23,19 @@
         "total": "총 {count}건",
         "yuan": "만원",
         "prev": "이전",
-        "next": "다음"
+        "next": "다음",
+        "loadMore": "더 보기",
+        "noMore": "더 이상 없습니다",
+        "goSearch": "차량 찾기",
+        "viewDetail": "상세보기"
+    },
+    "favorite": {
+        "empty": "찜한 차량이 없습니다",
+        "remove": "삭제",
+        "removeSuccess": "찜 목록에서 삭제되었습니다",
+        "confirmRemove": "찜 목록에서 삭제하시겠습니까?",
+        "addSuccess": "찜 목록에 추가되었습니다",
+        "add": "찜하기"
     },
     "nav": {
         "home": "홈",
@@ -31,6 +43,7 @@
         "publish": "차량 등록",
         "myCars": "내 차량",
         "myOrders": "주문 내역",
+        "favorites": "찜 목록",
         "userCenter": "마이페이지",
         "login": "로그인",
         "logout": "로그아웃",

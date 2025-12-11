@@ -23,7 +23,19 @@
         "total": "共 {count} 筆",
         "yuan": "萬元",
         "prev": "上一步",
-        "next": "下一步"
+        "next": "下一步",
+        "loadMore": "載入更多",
+        "noMore": "沒有更多了",
+        "goSearch": "去看看",
+        "viewDetail": "查看詳情"
+    },
+    "favorite": {
+        "empty": "暫無收藏",
+        "remove": "取消收藏",
+        "removeSuccess": "已取消收藏",
+        "confirmRemove": "確定要取消收藏嗎？",
+        "addSuccess": "收藏成功",
+        "add": "收藏"
     },
     "nav": {
         "home": "首頁",
@@ -31,6 +43,7 @@
         "publish": "發布車源",
         "myCars": "我的車源",
         "myOrders": "我的訂單",
+        "favorites": "我的收藏",
         "userCenter": "個人中心",
         "login": "登入",
         "logout": "登出",

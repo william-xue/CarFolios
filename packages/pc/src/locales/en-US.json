@@ -23,7 +23,19 @@
         "total": "{count} items",
         "yuan": "K",
         "prev": "Previous",
-        "next": "Next"
+        "next": "Next",
+        "loadMore": "Load More",
+        "noMore": "No more items",
+        "goSearch": "Browse Cars",
+        "viewDetail": "View Details"
+    },
+    "favorite": {
+        "empty": "No favorites yet",
+        "remove": "Remove",
+        "removeSuccess": "Removed from favorites",
+        "confirmRemove": "Remove from favorites?",
+        "addSuccess": "Added to favorites",
+        "add": "Favorite"
     },
     "nav": {
         "home": "Home",
@@ -31,6 +43,7 @@
         "publish": "Publish Car",
         "myCars": "My Cars",
         "myOrders": "My Orders",
+        "favorites": "My Favorites",
         "userCenter": "Profile",
         "login": "Login",
         "logout": "Logout",

@@ -23,7 +23,19 @@
         "total": "合計 {count} 件",
         "yuan": "万円",
         "prev": "前へ",
-        "next": "次へ"
+        "next": "次へ",
+        "loadMore": "もっと見る",
+        "noMore": "これ以上ありません",
+        "goSearch": "車両を探す",
+        "viewDetail": "詳細を見る"
+    },
+    "favorite": {
+        "empty": "お気に入りがありません",
+        "remove": "削除",
+        "removeSuccess": "お気に入りから削除しました",
+        "confirmRemove": "お気に入りから削除しますか？",
+        "addSuccess": "お気に入りに追加しました",
+        "add": "お気に入り"
     },
     "nav": {
         "home": "ホーム",
@@ -31,6 +43,7 @@
         "publish": "車両掲載",
         "myCars": "マイカー",
         "myOrders": "注文履歴",
+        "favorites": "お気に入り",
         "userCenter": "マイページ",
         "login": "ログイン",
         "logout": "ログアウト",
