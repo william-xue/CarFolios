@@ -246,5 +246,28 @@
     "language": {
         "switch": "言語切替",
         "current": "現在の言語"
+    },
+    "share": {
+        "title": "車両をシェア",
+        "copyLink": "リンクをコピー",
+        "wechat": "WeChat",
+        "weibo": "Weibo",
+        "qq": "QQ",
+        "poster": "ポスター作成",
+        "nativeShare": "システムシェア",
+        "copySuccess": "リンクをコピーしました",
+        "copyFailed": "コピーに失敗しました",
+        "wechatTip": "リンクをコピーしてWeChatでシェアしてください"
+    },
+    "poster": {
+        "title": "ポスター作成",
+        "selectTemplate": "テンプレートを選択",
+        "generating": "ポスターを作成中...",
+        "download": "ポスターをダウンロード",
+        "downloadSuccess": "ポスターを保存しました",
+        "downloadFailed": "ダウンロードに失敗しました",
+        "generateFailed": "ポスター作成に失敗しました",
+        "longPressToSave": "長押しで画像を保存",
+        "noCarData": "車両情報がありません"
     }
 }

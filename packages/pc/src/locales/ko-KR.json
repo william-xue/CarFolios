@@ -246,5 +246,28 @@
     "language": {
         "switch": "언어 변경",
         "current": "현재 언어"
+    },
+    "share": {
+        "title": "차량 공유",
+        "copyLink": "링크 복사",
+        "wechat": "WeChat",
+        "weibo": "Weibo",
+        "qq": "QQ",
+        "poster": "포스터 만들기",
+        "nativeShare": "시스템 공유",
+        "copySuccess": "링크가 복사되었습니다",
+        "copyFailed": "복사에 실패했습니다",
+        "wechatTip": "링크를 복사하여 WeChat에서 공유해주세요"
+    },
+    "poster": {
+        "title": "포스터 만들기",
+        "selectTemplate": "템플릿 선택",
+        "generating": "포스터 생성 중...",
+        "download": "포스터 다운로드",
+        "downloadSuccess": "포스터가 저장되었습니다",
+        "downloadFailed": "다운로드에 실패했습니다",
+        "generateFailed": "포스터 생성에 실패했습니다",
+        "longPressToSave": "길게 눌러 이미지 저장",
+        "noCarData": "차량 정보가 없습니다"
     }
 }

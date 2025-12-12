@@ -39,6 +39,13 @@ Object.defineProperty(navigator, 'clipboard', {
     configurable: true,
 })
 
+// Mock window.isSecureContext to ensure clipboard API is used
+Object.defineProperty(window, 'isSecureContext', {
+    value: true,
+    writable: true,
+    configurable: true,
+})
+
 // Mock window.open
 const mockWindowOpen = vi.fn()
 Object.defineProperty(window, 'open', {

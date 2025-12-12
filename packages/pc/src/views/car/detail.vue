@@ -234,7 +234,19 @@ onUnmounted(() => {
                                 :show-text="true"
                                 @login-required="showLoginModal = true"
                             />
-                            <SharePopover :title="car.title" :image="car.coverImage" />
+                            <SharePopover
+                            :title="car.title"
+                            :image="car.coverImage"
+                            :car-data="{
+                                id: car.id,
+                                title: car.title,
+                                price: car.price,
+                                mileage: car.mileage,
+                                firstRegDate: car.firstRegDate || '',
+                                coverImage: car.coverImage || '',
+                                cityName: car.cityName
+                            }"
+                        />
                         </div>
                     </div>
                     <div class="car-price">

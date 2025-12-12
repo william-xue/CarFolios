@@ -298,5 +298,16 @@
         "copySuccess": "Link copied to clipboard",
         "copyFailed": "Copy failed, please copy manually",
         "wechatTip": "Please copy the link and share it in WeChat"
+    },
+    "poster": {
+        "title": "Generate Poster",
+        "selectTemplate": "Select Template",
+        "generating": "Generating poster...",
+        "download": "Download Poster",
+        "downloadSuccess": "Poster saved",
+        "downloadFailed": "Download failed, please retry",
+        "generateFailed": "Failed to generate poster, please retry",
+        "longPressToSave": "Long press to save image",
+        "noCarData": "Missing car information"
     }
 }

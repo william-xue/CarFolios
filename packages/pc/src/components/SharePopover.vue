@@ -3,6 +3,8 @@ import { ref, computed } from 'vue'
 import { Share, Link, ChatDotRound, Picture } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
 import { useLocale } from '@/composables/useLocale'
+import PosterModal from './PosterModal.vue'
+import type { CarInfo } from '@/utils/posterTemplates'
 
 const { t } = useLocale()
 
@@ -21,6 +23,8 @@ const props = defineProps<{
     image?: string
     description?: string
     url?: string
+    // 海报生成需要的完整车辆信息
+    carData?: CarInfo
 }>()
 
 const emit = defineEmits<{
@@ -51,15 +55,34 @@ const isMobile = computed(() => {
     return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
 })
 
-// 复制链接
+// 复制链接 - 兼容多种浏览器环境
 async function copyLink(): Promise<boolean> {
     try {
-        await navigator.clipboard.writeText(shareUrl.value)
+        // 优先使用 Clipboard API
+        if (navigator.clipboard && window.isSecureContext) {
+            await navigator.clipboard.writeText(shareUrl.value)
+        } else {
+            // 降级方案：使用 execCommand
+            const textArea = document.createElement('textarea')
+            textArea.value = shareUrl.value
+            textArea.style.position = 'fixed'
+            textArea.style.left = '-9999px'
+            textArea.style.top = '-9999px'
+            document.body.appendChild(textArea)
+            textArea.focus()
+            textArea.select()
+            const successful = document.execCommand('copy')
+            document.body.removeChild(textArea)
+            if (!successful) {
+                throw new Error('execCommand copy failed')
+            }
+        }
         ElMessage.success(t('share.copySuccess') || '链接已复制到剪贴板')
         visible.value = false
         emit('share', 'copy')
         return true
     } catch (err) {
+        console.error('Copy failed:', err)
         ElMessage.error(t('share.copyFailed') || '复制失败，请手动复制')
         return false
     }
@@ -123,16 +146,16 @@ function shareToQQ(): void {
 }
 
 // 分享到微信（显示提示，因为微信需要扫码或在微信内分享）
-function shareToWechat(): void {
+async function shareToWechat(): Promise<void> {
     // 移动端尝试使用原生分享
     if (isMobile.value && supportsNativeShare.value) {
-        nativeShare()
+        await nativeShare()
         return
     }
     
     // PC 端提示用户复制链接后在微信中分享
     ElMessage.info(t('share.wechatTip') || '请复制链接后在微信中分享给好友')
-    copyLink()
+    await copyLink()
     emit('share', 'wechat')
 }
 
@@ -154,9 +177,27 @@ async function shareToSocial(platform: SharePlatform): Promise<void> {
     }
 }
 
-// 生成海报（占位功能）
+// 海报弹窗状态
+const posterModalVisible = ref(false)
+
+// 生成海报
 function generatePoster(): void {
-    ElMessage.info('海报生成功能开发中...')
+    if (!props.carData) {
+        ElMessage.warning(t('poster.noCarData') || '缺少车辆信息')
+        return
+    }
+    visible.value = false
+    posterModalVisible.value = true
+}
+
+// 海报生成完成
+function onPosterGenerated(): void {
+    // 可以添加统计等逻辑
+}
+
+// 海报下载完成
+function onPosterDownloaded(): void {
+    // 可以添加统计等逻辑
 }
 
 // 暴露方法供外部调用
@@ -231,6 +272,14 @@ defineExpose({
             </div>
         </div>
     </el-popover>
+
+    <!-- 海报生成弹窗 -->
+    <PosterModal
+        v-model:visible="posterModalVisible"
+        :car="carData || null"
+        @generated="onPosterGenerated"
+        @downloaded="onPosterDownloaded"
+    />
 </template>
 
 <style lang="scss" scoped>

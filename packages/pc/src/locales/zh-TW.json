@@ -246,5 +246,28 @@
     "language": {
         "switch": "切換語言",
         "current": "目前語言"
+    },
+    "share": {
+        "title": "分享車源",
+        "copyLink": "複製連結",
+        "wechat": "微信",
+        "weibo": "微博",
+        "qq": "QQ",
+        "poster": "生成海報",
+        "nativeShare": "使用系統分享",
+        "copySuccess": "連結已複製到剪貼簿",
+        "copyFailed": "複製失敗，請手動複製",
+        "wechatTip": "請複製連結後在微信中分享給好友"
+    },
+    "poster": {
+        "title": "生成海報",
+        "selectTemplate": "選擇模板",
+        "generating": "正在生成海報...",
+        "download": "下載海報",
+        "downloadSuccess": "海報已儲存",
+        "downloadFailed": "下載失敗，請重試",
+        "generateFailed": "海報生成失敗，請重試",
+        "longPressToSave": "長按圖片儲存到相簿",
+        "noCarData": "缺少車輛資訊"
     }
 }
