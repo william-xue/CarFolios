@@ -35,7 +35,8 @@
         "removeSuccess": "お気に入りから削除しました",
         "confirmRemove": "お気に入りから削除しますか？",
         "addSuccess": "お気に入りに追加しました",
-        "add": "お気に入り"
+        "add": "お気に入り",
+        "favorited": "お気に入り済み"
     },
     "nav": {
         "home": "ホーム",

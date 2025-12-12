@@ -17,11 +17,17 @@ export interface CarInfo {
     firstRegDate: string
     coverImage: string
     cityName?: string
+    // 新增字段用于填充空白区域
+    highlights?: string[]  // 车辆亮点，如：原版原漆、无事故、一手车
+    transmission?: string  // 变速箱类型
+    fuelType?: string      // 燃料类型
+    displacement?: string  // 排量
 }
 
 export interface PosterTemplate {
     id: string
     name: string
+    category: 'light' | 'dark' | 'colorful'  // 模板分类
     width: number
     height: number
     backgroundColor: string
@@ -30,6 +36,8 @@ export interface PosterTemplate {
     accentColor: string
     gradientStart?: string
     gradientEnd?: string
+    highlightBgColor?: string  // 亮点标签背景色
+    highlightTextColor?: string // 亮点标签文字色
 }
 
 export interface RenderOptions {
@@ -40,11 +48,13 @@ export interface RenderOptions {
     platformSlogan?: string
 }
 
-// 预定义模板 - 更精致的设计
+// 预定义模板 - 多风格设计
 export const templates: PosterTemplate[] = [
+    // 浅色系
     {
         id: 'elegant',
         name: '优雅白',
+        category: 'light',
         width: 750,
         height: 1334,
         backgroundColor: '#fafafa',
@@ -52,11 +62,30 @@ export const templates: PosterTemplate[] = [
         secondaryColor: '#666666',
         accentColor: '#c9a050',
         gradientStart: '#ffffff',
-        gradientEnd: '#f5f5f5'
+        gradientEnd: '#f5f5f5',
+        highlightBgColor: 'rgba(201, 160, 80, 0.15)',
+        highlightTextColor: '#c9a050'
     },
+    {
+        id: 'minimal',
+        name: '简约灰',
+        category: 'light',
+        width: 750,
+        height: 1334,
+        backgroundColor: '#f0f0f0',
+        textColor: '#2d2d2d',
+        secondaryColor: '#757575',
+        accentColor: '#424242',
+        gradientStart: '#fafafa',
+        gradientEnd: '#e8e8e8',
+        highlightBgColor: 'rgba(66, 66, 66, 0.1)',
+        highlightTextColor: '#424242'
+    },
+    // 深色系
     {
         id: 'luxury',
         name: '奢华黑',
+        category: 'dark',
         width: 750,
         height: 1334,
         backgroundColor: '#0d0d0d',
@@ -64,8 +93,93 @@ export const templates: PosterTemplate[] = [
         secondaryColor: '#999999',
         accentColor: '#d4af37',
         gradientStart: '#1a1a1a',
-        gradientEnd: '#0d0d0d'
+        gradientEnd: '#0d0d0d',
+        highlightBgColor: 'rgba(212, 175, 55, 0.2)',
+        highlightTextColor: '#d4af37'
+    },
+    {
+        id: 'midnight',
+        name: '午夜蓝',
+        category: 'dark',
+        width: 750,
+        height: 1334,
+        backgroundColor: '#0a1628',
+        textColor: '#ffffff',
+        secondaryColor: '#8fa3bf',
+        accentColor: '#4a9eff',
+        gradientStart: '#0f2744',
+        gradientEnd: '#0a1628',
+        highlightBgColor: 'rgba(74, 158, 255, 0.2)',
+        highlightTextColor: '#4a9eff'
+    },
+    // 彩色系
+    {
+        id: 'business',
+        name: '商务蓝',
+        category: 'colorful',
+        width: 750,
+        height: 1334,
+        backgroundColor: '#1e3a5f',
+        textColor: '#ffffff',
+        secondaryColor: '#b8c9dc',
+        accentColor: '#00b4d8',
+        gradientStart: '#264a73',
+        gradientEnd: '#1e3a5f',
+        highlightBgColor: 'rgba(0, 180, 216, 0.2)',
+        highlightTextColor: '#00b4d8'
+    },
+    {
+        id: 'vitality',
+        name: '活力橙',
+        category: 'colorful',
+        width: 750,
+        height: 1334,
+        backgroundColor: '#fff8f0',
+        textColor: '#2d2d2d',
+        secondaryColor: '#666666',
+        accentColor: '#ff6b35',
+        gradientStart: '#ffffff',
+        gradientEnd: '#fff0e6',
+        highlightBgColor: 'rgba(255, 107, 53, 0.15)',
+        highlightTextColor: '#ff6b35'
+    },
+    {
+        id: 'tech',
+        name: '科技紫',
+        category: 'colorful',
+        width: 750,
+        height: 1334,
+        backgroundColor: '#1a1033',
+        textColor: '#ffffff',
+        secondaryColor: '#a8a3b8',
+        accentColor: '#a855f7',
+        gradientStart: '#2d1f4e',
+        gradientEnd: '#1a1033',
+        highlightBgColor: 'rgba(168, 85, 247, 0.2)',
+        highlightTextColor: '#a855f7'
+    },
+    {
+        id: 'nature',
+        name: '清新绿',
+        category: 'colorful',
+        width: 750,
+        height: 1334,
+        backgroundColor: '#f0fdf4',
+        textColor: '#1a3d2e',
+        secondaryColor: '#4a7c59',
+        accentColor: '#22c55e',
+        gradientStart: '#f7fef9',
+        gradientEnd: '#e8f8ed',
+        highlightBgColor: 'rgba(34, 197, 94, 0.15)',
+        highlightTextColor: '#16a34a'
     }
+]
+
+// 按分类获取模板
+export const templateCategories = [
+    { id: 'light', name: '浅色系', templates: templates.filter(t => t.category === 'light') },
+    { id: 'dark', name: '深色系', templates: templates.filter(t => t.category === 'dark') },
+    { id: 'colorful', name: '彩色系', templates: templates.filter(t => t.category === 'colorful') }
 ]
 
 /**
@@ -155,7 +269,7 @@ export async function renderPoster(options: RenderOptions): Promise<string> {
     canvas.height = template.height
     const ctx = canvas.getContext('2d')!
 
-    const isDark = template.id === 'luxury'
+    const isDark = template.category === 'dark' || template.id === 'tech' || template.id === 'business'
     const padding = 48
 
     // 1. 绘制渐变背景
@@ -259,7 +373,7 @@ export async function renderPoster(options: RenderOptions): Promise<string> {
     let tagX = padding
     ctx.font = '26px "PingFang SC", sans-serif'
 
-    tags.forEach((tag, index) => {
+    tags.forEach((tag) => {
         // 标签背景
         const tagText = `${tag.icon} ${tag.text}`
         const tagWidth = ctx.measureText(tagText).width + 24
@@ -324,10 +438,112 @@ export async function renderPoster(options: RenderOptions): Promise<string> {
     ctx.font = '20px "PingFang SC", sans-serif'
     ctx.fillText(platformSlogan, padding, bottomY + 120)
 
-    // 9. 底部装饰
-    const footerY = template.height - 40
+    // 9. 车辆亮点区域（填充空白）
+    const highlightsY = bottomY + 180
+    const defaultHighlights = ['品质认证', '专业检测', '全球配送', '售后保障']
+    const highlights = car.highlights?.length ? car.highlights : defaultHighlights
+
+    // 亮点区域标题
+    ctx.fillStyle = template.textColor
+    ctx.font = 'bold 24px "PingFang SC", sans-serif'
+    ctx.fillText('✨ 服务保障', padding, highlightsY)
+
+    // 绘制亮点标签网格
+    const highlightStartY = highlightsY + 30
+    const highlightTagHeight = 36
+    const highlightGap = 12
+    const maxTagsPerRow = 2
+    let currentHighlightX = padding
+    let currentHighlightY = highlightStartY
+    let tagsInCurrentRow = 0
+
+    ctx.font = '22px "PingFang SC", sans-serif'
+
+    highlights.slice(0, 6).forEach((highlight) => {
+        const tagWidth = ctx.measureText(highlight).width + 32
+
+        // 检查是否需要换行
+        if (tagsInCurrentRow >= maxTagsPerRow || currentHighlightX + tagWidth > template.width - padding) {
+            currentHighlightX = padding
+            currentHighlightY += highlightTagHeight + highlightGap
+            tagsInCurrentRow = 0
+        }
+
+        // 绘制标签背景
+        ctx.fillStyle = template.highlightBgColor || (isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)')
+        drawRoundedRect(ctx, currentHighlightX, currentHighlightY, tagWidth, highlightTagHeight, 18)
+        ctx.fill()
+
+        // 绘制标签边框
+        ctx.strokeStyle = template.highlightTextColor || template.accentColor
+        ctx.lineWidth = 1
+        drawRoundedRect(ctx, currentHighlightX, currentHighlightY, tagWidth, highlightTagHeight, 18)
+        ctx.stroke()
+
+        // 绘制标签文字
+        ctx.fillStyle = template.highlightTextColor || template.accentColor
+        ctx.fillText(highlight, currentHighlightX + 16, currentHighlightY + 25)
+
+        currentHighlightX += tagWidth + highlightGap
+        tagsInCurrentRow++
+    })
+
+    // 10. 营销文案区域
+    const promoY = currentHighlightY + highlightTagHeight + 40
+
+    // 营销文案背景卡片
+    const promoCardWidth = template.width - padding * 2
+    const promoCardHeight = 90
+
+    // 绘制营销卡片背景渐变
+    const promoGradient = ctx.createLinearGradient(padding, promoY, padding + promoCardWidth, promoY)
+    promoGradient.addColorStop(0, template.accentColor)
+    promoGradient.addColorStop(1, isDark ?
+        (template.id === 'midnight' ? '#2563eb' : template.id === 'tech' ? '#7c3aed' : '#b8860b') :
+        (template.id === 'vitality' ? '#f97316' : template.id === 'nature' ? '#16a34a' : '#d4a574'))
+
+    ctx.fillStyle = promoGradient
+    drawRoundedRect(ctx, padding, promoY, promoCardWidth, promoCardHeight, 16)
+    ctx.fill()
+
+    // 营销主标题
+    ctx.fillStyle = isDark ? '#0d0d0d' : '#ffffff'
+    ctx.font = 'bold 26px "PingFang SC", sans-serif'
+    ctx.fillText('🔥 限时特惠', padding + 20, promoY + 35)
+
+    // 营销副标题
+    ctx.font = '18px "PingFang SC", sans-serif'
+    ctx.fillStyle = isDark ? 'rgba(0,0,0,0.7)' : 'rgba(255,255,255,0.9)'
+    ctx.fillText('首单立减 ¥500 · 推荐好友再享返现', padding + 20, promoY + 65)
+
+    // 右侧装饰图标
+    ctx.font = '32px sans-serif'
+    ctx.fillText('🎁', template.width - padding - 55, promoY + 52)
+
+    // 11. 联系方式区域
+    const contactY = promoY + promoCardHeight + 25
+
+    // 联系方式背景
+    ctx.fillStyle = isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.03)'
+    drawRoundedRect(ctx, padding, contactY, promoCardWidth, 50, 12)
+    ctx.fill()
+
+    // 联系人信息
+    ctx.fillStyle = template.secondaryColor
+    ctx.font = '20px "PingFang SC", sans-serif'
+    ctx.fillText('👤 联系人: 包光辉', padding + 16, contactY + 32)
+
+    // 联系电话
+    ctx.fillStyle = template.accentColor
+    ctx.font = 'bold 20px "PingFang SC", sans-serif'
+    const phoneText = '📞 13917594507'
+    const phoneWidth = ctx.measureText(phoneText).width
+    ctx.fillText(phoneText, template.width - padding - phoneWidth - 16, contactY + 32)
+
+    // 12. 底部装饰
+    const footerY = template.height - 30
     ctx.fillStyle = isDark ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.2)'
-    ctx.font = '18px "SF Pro Display", sans-serif'
+    ctx.font = '16px "SF Pro Display", sans-serif'
     ctx.textAlign = 'center'
     ctx.fillText(`© ${new Date().getFullYear()} ${platformName}`, template.width / 2, footerY)
     ctx.textAlign = 'left'

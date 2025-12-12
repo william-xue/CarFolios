@@ -1,10 +1,11 @@
 <script setup lang="ts">
 import { ref, watch, computed } from 'vue'
 import { ElMessage } from 'element-plus'
-import { Download, InfoFilled } from '@element-plus/icons-vue'
+import { Download, InfoFilled, Check } from '@element-plus/icons-vue'
 import { useLocale } from '@/composables/useLocale'
 import {
     templates,
+    templateCategories,
     renderPoster,
     type CarInfo,
     type PosterTemplate
@@ -99,57 +100,66 @@ watch(
     <el-dialog
         v-model="dialogVisible"
         :title="t('poster.title')"
-        width="520px"
+        width="680px"
         :close-on-click-modal="false"
         class="poster-modal"
         destroy-on-close
     >
         <div class="poster-content">
-            <!-- 模板选择 -->
-            <div class="template-section">
-                <div class="section-header">
-                    <span class="section-title">{{ t('poster.selectTemplate') }}</span>
-                </div>
-                <div class="template-grid">
-                    <div
-                        v-for="template in templates"
-                        :key="template.id"
-                        class="template-card"
-                        :class="{ active: selectedTemplate.id === template.id }"
-                        @click="selectTemplate(template)"
-                    >
-                        <div
-                            class="template-preview"
-                            :style="{
-                                background: `linear-gradient(135deg, ${template.gradientStart || template.backgroundColor}, ${template.gradientEnd || template.backgroundColor})`
-                            }"
+            <div class="poster-layout">
+                <!-- 左侧：模板选择 -->
+                <div class="template-panel">
+                    <div class="panel-header">
+                        <span class="panel-title">{{ t('poster.selectTemplate') }}</span>
+                    </div>
+                    
+                    <div class="template-categories">
+                        <div 
+                            v-for="category in templateCategories" 
+                            :key="category.id"
+                            class="category-section"
                         >
-                            <div class="preview-content">
-                                <div class="preview-img" :style="{ background: template.id === 'luxury' ? '#333' : '#e0e0e0' }"></div>
-                                <div class="preview-price" :style="{ background: template.accentColor }"></div>
-                                <div class="preview-text" :style="{ background: template.textColor, opacity: 0.6 }"></div>
-                                <div class="preview-qr" :style="{ background: template.id === 'luxury' ? '#fff' : '#333' }"></div>
+                            <div class="category-header">
+                                <span class="category-name">{{ category.name }}</span>
                             </div>
-                        </div>
-                        <div class="template-info">
-                            <span class="template-name">{{ template.name }}</span>
-                            <span class="template-check" v-if="selectedTemplate.id === template.id">✓</span>
+                            <div class="template-list">
+                                <div
+                                    v-for="template in category.templates"
+                                    :key="template.id"
+                                    class="template-item"
+                                    :class="{ active: selectedTemplate.id === template.id }"
+                                    @click="selectTemplate(template)"
+                                >
+                                    <div 
+                                        class="template-color"
+                                        :style="{
+                                            background: `linear-gradient(135deg, ${template.gradientStart || template.backgroundColor}, ${template.gradientEnd || template.backgroundColor})`
+                                        }"
+                                    >
+                                        <div class="color-accent" :style="{ background: template.accentColor }"></div>
+                                    </div>
+                                    <span class="template-name">{{ template.name }}</span>
+                                    <el-icon v-if="selectedTemplate.id === template.id" class="check-icon">
+                                        <Check />
+                                    </el-icon>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
 
-            <!-- 海报预览 -->
-            <div class="preview-section">
-                <div class="preview-container" v-loading="loading" element-loading-text="生成中...">
-                    <img
-                        v-if="posterDataUrl"
-                        :src="posterDataUrl"
-                        alt="海报预览"
-                        class="poster-image"
-                    />
-                    <div v-else-if="!loading" class="empty-state">
-                        <span>{{ t('poster.generating') }}</span>
+                <!-- 右侧：海报预览 -->
+                <div class="preview-panel">
+                    <div class="preview-container" v-loading="loading" :element-loading-text="t('poster.generating')">
+                        <img
+                            v-if="posterDataUrl"
+                            :src="posterDataUrl"
+                            alt="海报预览"
+                            class="poster-image"
+                        />
+                        <div v-else-if="!loading" class="empty-state">
+                            <span>{{ t('poster.generating') }}</span>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -180,6 +190,7 @@ watch(
     </el-dialog>
 </template>
 
+
 <style scoped lang="scss">
 .poster-modal {
     :deep(.el-dialog) {
@@ -209,49 +220,76 @@ watch(
 }
 
 .poster-content {
-    max-height: 70vh;
+    max-height: 75vh;
     overflow-y: auto;
 }
 
-.template-section {
-    padding: 20px 24px;
+.poster-layout {
+    display: flex;
+    min-height: 500px;
+}
+
+.template-panel {
+    width: 220px;
     background: #fafafa;
+    border-right: 1px solid #f0f0f0;
+    flex-shrink: 0;
+}
+
+.panel-header {
+    padding: 16px 16px 12px;
     border-bottom: 1px solid #f0f0f0;
 }
 
-.section-header {
-    margin-bottom: 16px;
-}
-
-.section-title {
+.panel-title {
     font-size: 14px;
-    font-weight: 500;
+    font-weight: 600;
     color: #333;
 }
 
-.template-grid {
-    display: flex;
-    gap: 16px;
+.template-categories {
+    padding: 8px 0;
+    max-height: calc(75vh - 140px);
+    overflow-y: auto;
 }
 
-.template-card {
-    flex: 1;
+.category-section {
+    margin-bottom: 8px;
+}
+
+.category-header {
+    padding: 8px 16px 6px;
+}
+
+.category-name {
+    font-size: 12px;
+    color: #999;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.template-list {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.template-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 16px;
     cursor: pointer;
-    transition: all 0.3s ease;
+    transition: all 0.2s ease;
+    position: relative;
     
     &:hover {
-        transform: translateY(-2px);
-        
-        .template-preview {
-            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
-        }
+        background: rgba(0, 0, 0, 0.04);
     }
     
     &.active {
-        .template-preview {
-            border-color: var(--el-color-primary);
-            box-shadow: 0 0 0 3px rgba(var(--el-color-primary-rgb), 0.15);
-        }
+        background: rgba(var(--el-color-primary-rgb), 0.08);
         
         .template-name {
             color: var(--el-color-primary);
@@ -260,80 +298,44 @@ watch(
     }
 }
 
-.template-preview {
-    aspect-ratio: 9/16;
-    border-radius: 12px;
-    border: 2px solid transparent;
+.template-color {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    flex-shrink: 0;
+    position: relative;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
     overflow: hidden;
-    transition: all 0.3s ease;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
 }
 
-.preview-content {
-    padding: 12px;
-    height: 100%;
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-}
-
-.preview-img {
-    flex: 1;
-    border-radius: 6px;
-    min-height: 60px;
-}
-
-.preview-price {
-    width: 50%;
-    height: 12px;
-    border-radius: 6px;
-}
-
-.preview-text {
-    width: 80%;
-    height: 8px;
-    border-radius: 4px;
-}
-
-.preview-qr {
-    width: 24px;
-    height: 24px;
-    border-radius: 4px;
-    align-self: flex-end;
-}
-
-.template-info {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 6px;
-    margin-top: 10px;
+.color-accent {
+    position: absolute;
+    bottom: 4px;
+    left: 4px;
+    width: 12px;
+    height: 4px;
+    border-radius: 2px;
 }
 
 .template-name {
     font-size: 13px;
-    color: #666;
+    color: #333;
+    flex: 1;
     transition: all 0.2s;
 }
 
-.template-check {
-    width: 18px;
-    height: 18px;
-    background: var(--el-color-primary);
-    color: #fff;
-    border-radius: 50%;
-    font-size: 11px;
+.check-icon {
+    color: var(--el-color-primary);
+    font-size: 16px;
+}
+
+.preview-panel {
+    flex: 1;
+    padding: 24px;
     display: flex;
     align-items: center;
     justify-content: center;
-}
-
-.preview-section {
-    padding: 24px;
-    display: flex;
-    justify-content: center;
     background: linear-gradient(180deg, #f5f5f5 0%, #e8e8e8 100%);
-    min-height: 400px;
 }
 
 .preview-container {
@@ -342,11 +344,12 @@ watch(
     display: flex;
     align-items: center;
     justify-content: center;
+    min-height: 450px;
 }
 
 .poster-image {
     max-width: 100%;
-    max-height: 480px;
+    max-height: 500px;
     border-radius: 8px;
     box-shadow: 0 12px 40px rgba(0, 0, 0, 0.2);
     transition: transform 0.3s ease;
@@ -363,7 +366,7 @@ watch(
 }
 
 .mobile-hint {
-    margin: 0 24px 16px;
+    margin: 16px 24px;
     padding: 12px 16px;
     background: linear-gradient(135deg, #fff7e6 0%, #fff2d9 100%);
     border-radius: 8px;
@@ -385,6 +388,34 @@ watch(
     
     .el-button {
         min-width: 100px;
+    }
+}
+
+// 响应式适配
+@media (max-width: 768px) {
+    .poster-layout {
+        flex-direction: column;
+    }
+    
+    .template-panel {
+        width: 100%;
+        border-right: none;
+        border-bottom: 1px solid #f0f0f0;
+    }
+    
+    .template-categories {
+        max-height: 200px;
+    }
+    
+    .template-list {
+        flex-direction: row;
+        flex-wrap: wrap;
+        padding: 0 12px;
+    }
+    
+    .template-item {
+        width: calc(50% - 4px);
+        padding: 8px 12px;
     }
 }
 </style>

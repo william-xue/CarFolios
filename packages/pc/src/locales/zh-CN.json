@@ -35,7 +35,8 @@
         "removeSuccess": "已取消收藏",
         "confirmRemove": "确定要取消收藏吗？",
         "addSuccess": "收藏成功",
-        "add": "收藏"
+        "add": "收藏",
+        "favorited": "已收藏"
     },
     "nav": {
         "home": "首页",
