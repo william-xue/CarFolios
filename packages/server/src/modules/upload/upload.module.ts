@@ -15,12 +15,15 @@ import { UploadService } from './upload.service'
                     cb(null, uniqueSuffix + extname(file.originalname))
                 },
             }),
-            limits: { fileSize: 10 * 1024 * 1024 }, // 10MB
+            limits: { fileSize: 100 * 1024 * 1024 }, // 100MB
             fileFilter: (req, file, cb) => {
-                if (file.mimetype.match(/\/(jpg|jpeg|png|gif|webp)$/)) {
+                if (
+                    file.mimetype.match(/^image\/(jpg|jpeg|png|gif|webp)$/) ||
+                    file.mimetype.match(/^video\/(mp4|quicktime|x-msvideo)$/)
+                ) {
                     cb(null, true)
                 } else {
-                    cb(new Error('只支持图片格式'), false)
+                    cb(new Error('只支持图片或视频格式'), false)
                 }
             },
         }),

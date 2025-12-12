@@ -17,3 +17,21 @@ export function uploadImages(files: File[]): Promise<{ urls: string[] }> {
         headers: { 'Content-Type': 'multipart/form-data' },
     })
 }
+
+export function uploadFile(
+    file: File,
+    options?: { onProgress?: (percent: number) => void }
+): Promise<{ url: string }> {
+    const formData = new FormData()
+    formData.append('file', file)
+
+    return request.post('/upload/file', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+        onUploadProgress: (progressEvent: any) => {
+            if (options?.onProgress && progressEvent.total) {
+                const percent = Math.round((progressEvent.loaded * 100) / progressEvent.total)
+                options.onProgress(percent)
+            }
+        },
+    })
+}
