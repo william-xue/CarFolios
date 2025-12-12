@@ -231,11 +231,16 @@ import { computed } from 'vue'
             @click="goToDetail(car.id)"
           >
             <van-image 
-              :src="car.coverImage" 
+              :src="car.coverImage || 'https://via.placeholder.com/240x180?text=No+Image'" 
               fit="cover" 
               class="car-image"
-              lazy-load
-            />
+            >
+              <template #error>
+                <div class="image-error">
+                  <van-icon name="photo-o" size="24" />
+                </div>
+              </template>
+            </van-image>
             <div class="car-info">
               <div class="car-title ellipsis-2">{{ car.title }}</div>
               <div class="car-tags">
@@ -374,6 +379,18 @@ import { computed } from 'vue'
 
 .car-city {
   font-size: 12px;
+  color: #999;
+}
+
+/* 图片加载和错误状态 */
+.image-error,
+.image-loading {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f5f5f5;
   color: #999;
 }
 </style>

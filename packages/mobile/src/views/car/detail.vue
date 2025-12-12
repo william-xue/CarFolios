@@ -1,10 +1,13 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useCarStore } from '@/stores/car'
 import { useUserStore } from '@/stores/user'
 import { createOrder } from '@/api/order'
 import { showToast, showConfirmDialog, showLoadingToast, closeToast } from 'vant'
+import FavoriteButton from '@/components/FavoriteButton.vue'
+import ShareSheet from '@/components/ShareSheet.vue'
+import CommentSection from '@/components/CommentSection.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -13,7 +16,45 @@ const userStore = useUserStore()
 
 const carId = Number(route.params.id)
 const showContact = ref(false)
+const showShare = ref(false)
 const ordering = ref(false)
+
+// 分享链接
+const shareUrl = computed(() => {
+  return `${window.location.origin}/car/${carId}`
+})
+
+// 分享标题
+const shareTitle = computed(() => {
+  if (!carStore.currentCar) return ''
+  return `${carStore.currentCar.title} - ${carStore.currentCar.price}万`
+})
+
+// 分享描述
+const shareDescription = computed(() => {
+  if (!carStore.currentCar) return ''
+  return `${carStore.currentCar.mileage}万公里 | ${carStore.currentCar.firstRegDate}上牌 | ${carStore.currentCar.cityName}`
+})
+
+// 海报用车辆信息
+const posterCarInfo = computed(() => {
+  if (!carStore.currentCar) return undefined
+  return {
+    title: carStore.currentCar.title,
+    price: carStore.currentCar.price,
+    image: carStore.currentCar.images?.[0] || '',
+    mileage: carStore.currentCar.mileage,
+    firstRegDate: carStore.currentCar.firstRegDate,
+    gearbox: carStore.currentCar.gearbox,
+    cityName: carStore.currentCar.cityName
+  }
+})
+
+// 联系人信息
+const contactInfo = computed(() => ({
+  name: carStore.currentCar?.ownerName || '销售顾问',
+  phone: '13917594507'
+}))
 
 onMounted(() => {
   carStore.fetchCarDetail(carId)
@@ -31,6 +72,10 @@ function handleContact() {
     return
   }
   showContact.value = true
+}
+
+function handleShare() {
+  showShare.value = true
 }
 
 async function handleOrder() {
@@ -71,7 +116,14 @@ function goBack() {
 <template>
   <div class="car-detail-page" v-if="carStore.currentCar">
     <!-- 导航栏 -->
-    <van-nav-bar title="车辆详情" left-arrow @click-left="goBack" />
+    <van-nav-bar title="车辆详情" left-arrow @click-left="goBack">
+      <template #right>
+        <div class="nav-actions">
+          <FavoriteButton :car-id="carId" size="normal" />
+          <van-icon name="share-o" size="22" @click="handleShare" />
+        </div>
+      </template>
+    </van-nav-bar>
 
     <!-- 图片轮播 -->
     <van-swipe :autoplay="3000" indicator-color="#fff">
@@ -139,6 +191,9 @@ function goBack() {
       </div>
     </div>
 
+    <!-- 评论区 -->
+    <CommentSection :car-id="carId" :owner-id="carStore.currentCar.ownerId" />
+
     <!-- 底部操作栏 -->
     <div class="bottom-bar safe-area-bottom">
       <van-button icon="phone-o" @click="handleContact">联系卖家</van-button>
@@ -154,6 +209,17 @@ function goBack() {
         </van-cell-group>
       </div>
     </van-action-sheet>
+
+    <!-- 分享面板 -->
+    <ShareSheet
+      v-model:show="showShare"
+      :title="shareTitle"
+      :url="shareUrl"
+      :description="shareDescription"
+      :image="carStore.currentCar.images?.[0]"
+      :car="posterCarInfo"
+      :contact="contactInfo"
+    />
   </div>
 </template>
 
@@ -161,6 +227,12 @@ function goBack() {
 .car-detail-page {
   padding-bottom: 70px;
   background: #f7f8fa;
+}
+
+.nav-actions {
+  display: flex;
+  align-items: center;
+  gap: 16px;
 }
 
 .car-swipe-image {

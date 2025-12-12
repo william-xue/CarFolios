@@ -8,8 +8,11 @@ import { AppModule } from './app.module'
 async function bootstrap() {
     const app = await NestFactory.create<NestExpressApplication>(AppModule)
 
-    // 静态文件服务
-    app.useStaticAssets(join(process.cwd(), 'uploads'), { prefix: '/uploads' })
+    // 静态文件服务 - 使用 __dirname 确保路径正确
+    // __dirname 在运行时指向 dist/src，所以需要向上两级到 packages/server
+    const uploadsPath = join(__dirname, '..', '..', 'uploads')
+    app.useStaticAssets(uploadsPath, { prefix: '/uploads' })
+    console.log(`📁 Static files served from: ${uploadsPath}`)
 
     // 全局前缀
     app.setGlobalPrefix('api')

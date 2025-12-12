@@ -12,12 +12,16 @@
     "dependencies": {
         "@vant/use": "^1.6.0",
         "axios": "^1.13.2",
+        "dayjs": "^1.11.19",
+        "html2canvas": "^1.4.1",
         "pinia": "^2.3.0",
+        "qrcode": "^1.5.4",
         "vant": "^4.9.14",
         "vue": "^3.5.13",
         "vue-router": "^4.5.0"
     },
     "devDependencies": {
+        "@types/qrcode": "^1.5.6",
         "@vant/auto-import-resolver": "^1.2.1",
         "@vitejs/plugin-vue": "^5.2.1",
         "typescript": "~5.6.2",

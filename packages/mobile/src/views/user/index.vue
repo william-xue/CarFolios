@@ -28,6 +28,15 @@ function goToMyOrders() {
   router.push('/my-orders')
 }
 
+function goToFavorites() {
+  if (!userStore.isLoggedIn) {
+    showToast('请先登录')
+    router.push('/login')
+    return
+  }
+  router.push('/favorites')
+}
+
 async function handleLogout() {
   try {
     await showConfirmDialog({
@@ -69,7 +78,7 @@ async function handleLogout() {
     <van-cell-group inset class="menu-group">
       <van-cell title="我的车源" icon="records" is-link @click="goToMyCars" />
       <van-cell title="我的订单" icon="orders-o" is-link @click="goToMyOrders" />
-      <van-cell title="我的收藏" icon="star-o" is-link />
+      <van-cell title="我的收藏" icon="star-o" is-link @click="goToFavorites" />
       <van-cell title="浏览记录" icon="clock-o" is-link />
     </van-cell-group>
 

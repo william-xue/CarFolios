@@ -55,6 +55,12 @@ const routes: RouteRecordRaw[] = [
         meta: { title: '我的订单', requiresAuth: true },
     },
     {
+        path: '/favorites',
+        name: 'Favorites',
+        component: () => import('@/views/user/favorites.vue'),
+        meta: { title: '我的收藏', requiresAuth: true },
+    },
+    {
         path: '/payment/:orderId',
         name: 'Payment',
         component: () => import('@/views/payment/index.vue'),
